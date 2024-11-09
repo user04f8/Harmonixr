@@ -4,6 +4,8 @@ __pycache__
 lightning_logs
 harmony/
 GiantMIDI-PIano/
+checkpoints
+tb_logs
 
 # TODO: add data download directions
 # TODO: restructure entirely
