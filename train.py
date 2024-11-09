@@ -55,7 +55,7 @@ if __name__ == '__main__':
     model = MIDIClassifier(**hparams)
 
     # Set up logger
-    logger = TensorBoardLogger("tb_logs", name="MIDIClassifier")
+    logger = TensorBoardLogger("tb_logs", name="BIG-MIDIClassifier")
 
     # Define callbacks
     early_stop_callback = EarlyStopping(

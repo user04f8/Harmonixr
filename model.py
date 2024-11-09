@@ -50,24 +50,7 @@ class MIDIClassifier(pl.LightningModule):
         weight_decay=1e-5,
     ):
         super(MIDIClassifier, self).__init__()
-        self.save_hyperparameters(ignore=['conv_channels', 'conv_kernel_sizes', 'conv_strides',
-                                          'conv_paddings', 'dropout_rates', 'maxpool_kernel_sizes',
-                                          'fc_hidden_dims'])
-        # Provide default values for lists if None
-        if conv_channels is None:
-            conv_channels = [16, 32, 64]
-        if conv_kernel_sizes is None:
-            conv_kernel_sizes = [(7,3,7), (5,3,5), (3,3,3)]
-        if conv_strides is None:
-            conv_strides = [(1,1,1)] * num_conv_layers
-        if conv_paddings is None:
-            conv_paddings = [(3,1,3), (2,1,2), (1,1,1)]
-        if dropout_rates is None:
-            dropout_rates = [0.3] * num_conv_layers
-        if maxpool_kernel_sizes is None:
-            maxpool_kernel_sizes = [(1,1,2)] * num_conv_layers
-        if fc_hidden_dims is None:
-            fc_hidden_dims = [256, 512]
+        self.save_hyperparameters()
         
         self.conv_layers_params = {
             'num_conv_layers': num_conv_layers,
@@ -104,9 +87,13 @@ class MIDIClassifier(pl.LightningModule):
 
         self.conv = nn.Sequential(*conv_layers)
         
-        # Initialize feature projection as None
-        self.feature_projection = None
+        # Compute feature_dim based on the convolutional layers
+        self.feature_dim = self._compute_feature_dim()
 
+        # Initialize feature_projection
+        self.feature_projection = nn.Linear(self.feature_dim, self.hparams.transformer_d_model)
+        nn.init.xavier_uniform_(self.feature_projection.weight)
+    
         # Transformer encoder with Layer Normalization
         encoder_layer = nn.TransformerEncoderLayer(
             d_model=transformer_d_model,
@@ -142,6 +129,48 @@ class MIDIClassifier(pl.LightningModule):
         # Contrastive Loss
         self.criterion = ContrastiveLoss(margin=1.0)
 
+    def _compute_feature_dim(self):
+        # Function to compute the output size after convolution and pooling
+        def compute_output_size(input_size, kernel_size, stride, padding):
+            return (input_size + 2 * padding - kernel_size) // stride + 1
+
+        # Initial sizes
+        p_size = 12
+        o_size = self.hparams.o
+        t_size = self.hparams.t
+
+        for i in range(self.hparams.num_conv_layers):
+            # Wraparound padding adds 2 to pitch size
+            p_size += 2
+
+            # Conv layer parameters
+            kernel_size = self.hparams.conv_kernel_sizes[i]
+            stride = self.hparams.conv_strides[i]
+            padding = self.hparams.conv_paddings[i]
+
+            kernel_p, kernel_o, kernel_t = kernel_size
+            stride_p, stride_o, stride_t = stride
+            padding_p, padding_o, padding_t = padding
+
+            # Compute output sizes after conv
+            p_size = compute_output_size(p_size, kernel_p, stride_p, padding_p)
+            o_size = compute_output_size(o_size, kernel_o, stride_o, padding_o)
+            t_size = compute_output_size(t_size, kernel_t, stride_t, padding_t)
+
+            # MaxPool parameters
+            pool_size = self.hparams.maxpool_kernel_sizes[i]
+            pool_p, pool_o, pool_t = pool_size
+
+            # Compute output sizes after pooling
+            p_size = p_size // pool_p
+            o_size = o_size // pool_o
+            t_size = t_size // pool_t
+
+        # After convolutional layers, compute feature_dim
+        c = self.hparams.conv_channels[-1]
+        feature_dim = c * p_size * o_size
+        return feature_dim
+
     def forward_one(self, x):
         # x shape: (batch, 12, o, t)
         x = x.unsqueeze(1)  # Add channel dimension: (batch, 1, 12, o, t)
@@ -149,14 +178,6 @@ class MIDIClassifier(pl.LightningModule):
         # Flatten for transformer: (batch, features, seq_len)
         x = rearrange(x, 'b c p o t -> b (c p o) t')
         x = x.permute(2, 0, 1)  # (seq_len, batch, features)
-        feature_dim = x.size(-1)
-
-        # Initialize feature_projection if not already done
-        if self.feature_projection is None:
-            self.feature_projection = nn.Linear(feature_dim, self.hparams.transformer_d_model)
-            nn.init.xavier_uniform_(self.feature_projection.weight)
-            self.feature_projection.to(self.device)
-
         x = self.feature_projection(x)  # Project features to transformer_d_model
         x = self.transformer(x)
         x = x.mean(dim=0)  # (batch, features)
@@ -169,6 +190,10 @@ class MIDIClassifier(pl.LightningModule):
         # Euclidean distance
         distance = torch.norm(emb1 - emb2, p=2, dim=1)
         return distance, emb1, emb2
+    
+    def train_dataloader(self):
+        train_dataset = MIDIDataset(self.hparams.data_dir, self.hparams.t, split='train')
+        return DataLoader(train_dataset, batch_size=self.hparams.batch_size, shuffle=True, num_workers=0)
 
     def training_step(self, batch, batch_idx):
         (x1, x2), y = batch
@@ -245,14 +270,6 @@ class MIDIClassifier(pl.LightningModule):
             'frequency': 1
         }
         return [optimizer], [scheduler]
-
-    def train_dataloader(self):
-        train_dataset = MIDIDataset(self.hparams.data_dir, self.hparams.t, split='train')
-        return DataLoader(train_dataset, batch_size=self.hparams.batch_size, shuffle=True, num_workers=0)
-
-    # def val_dataloader(self):
-    #     val_dataset = MIDIDataset(self.hparams.data_dir, self.hparams.t, split='val')
-    #     return DataLoader(val_dataset, batch_size=self.hparams.batch_size, num_workers=0)
 
 class ContrastiveLoss(nn.Module):
     def __init__(self, margin=1.0):
