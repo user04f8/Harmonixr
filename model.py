@@ -215,11 +215,11 @@ class MIDIClassifier(pl.LightningModule):
 
     def train_dataloader(self):
         train_dataset = MIDIDataset(self.hparams.data_dir, self.hparams.t, split='train')
-        return DataLoader(train_dataset, batch_size=self.hparams.batch_size, shuffle=True, num_workers=23)
+        return DataLoader(train_dataset, batch_size=self.hparams.batch_size, shuffle=True, num_workers=0)
 
     def val_dataloader(self):
         val_dataset = MIDIDataset(self.hparams.data_dir, self.hparams.t, split='val')
-        return DataLoader(val_dataset, batch_size=self.hparams.batch_size, num_workers=23)
+        return DataLoader(val_dataset, batch_size=self.hparams.batch_size, num_workers=0)
 
 class ContrastiveLoss(nn.Module):
     def __init__(self, margin=1.0):

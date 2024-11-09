@@ -13,7 +13,7 @@ if __name__ == '__main__':
         't': 20 * 60 * 4,
         'o': 6, 
         'batch_size': 26,
-        'lr': 1e-4,
+        'lr': 1e-6,
         'threshold': 0.5,
         'num_conv_layers': 4,
         'conv_channels': [32, 64, 128, 256],
@@ -26,7 +26,7 @@ if __name__ == '__main__':
         'transformer_nhead': 8,
         'transformer_num_layers': 4,
         'fc_hidden_dims': [512, 256],
-        'weight_decay': 1e-5,
+        'weight_decay': 1e-6,
     }
 
     # hparams = {

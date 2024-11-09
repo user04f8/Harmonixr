@@ -1,3 +1,4 @@
+# data.py
 import torch
 from torch.utils.data import Dataset
 import os
@@ -59,26 +60,41 @@ class MIDIDataset(Dataset):
 
         if not self.is_train:
             # Pre-generate pairs for validation
-            self.pairs, self.pair_labels = self._generate_validation_pairs()
+            self.pairs, self.pair_labels = self._generate_validation_pairs(random_state)
 
-    def _generate_validation_pairs(self):
+    def _generate_validation_pairs(self, random_state):
+        random.seed(random_state)  # Set seed for reproducibility
         pairs = []
         pair_labels = []
+        MAX_SIMILAR_PAIRS_PER_COMPOSER = 5
+        MAX_DISSIMILAR_PAIRS = 5 * len(self.y)  # NOTE TODO test or separate metrics
+
         # Similar pairs
         for composer, idxs in self.composer_indices.items():
             if len(idxs) < 2:
                 continue
-            for idx1, idx2 in combinations(idxs, 2):
+            # Generate all combinations of similar pairs
+            similar_pairs = list(combinations(idxs, 2))
+            random.shuffle(similar_pairs)
+            # Select up to MAX_SIMILAR_PAIRS_PER_COMPOSER pairs
+            selected_pairs = similar_pairs[:MAX_SIMILAR_PAIRS_PER_COMPOSER]
+            for idx1, idx2 in selected_pairs:
                 pairs.append((idx1, idx2))
                 pair_labels.append(1)
+
         # Dissimilar pairs
+        dissimilar_pairs = []
         composers = list(self.composer_indices.keys())
-        for i in range(len(composers)):
-            for j in range(i + 1, len(composers)):
-                idx1 = random.choice(self.composer_indices[composers[i]])
-                idx2 = random.choice(self.composer_indices[composers[j]])
-                pairs.append((idx1, idx2))
-                pair_labels.append(0)
+        composer_pairs = list(combinations(composers, 2))
+        random.shuffle(composer_pairs)
+        # Select up to MAX_DISSIMILAR_PAIRS composer pairs
+        selected_composer_pairs = composer_pairs[:MAX_DISSIMILAR_PAIRS]
+        for c1, c2 in selected_composer_pairs:
+            idx1 = random.choice(self.composer_indices[c1])
+            idx2 = random.choice(self.composer_indices[c2])
+            pairs.append((idx1, idx2))
+            pair_labels.append(0)
+
         return pairs, pair_labels
 
     def __len__(self):
@@ -122,19 +138,24 @@ class MIDIDataset(Dataset):
     def _process_sample(self, sample):
         # sample: tensor of shape [12, O, T]
         C, O, T = sample.shape
+
         if T >= self.t:
-            start = random.randint(0, T - self.t)
+            if self.is_train:
+                # Random crop for training
+                start = random.randint(0, T - self.t)
+            else:
+                # Center crop for validation
+                start = (T - self.t) // 2
             sample = sample[:, :, start:start+self.t]
         else:
+            # Random padding when sample is shorter than self.t
             pad_size = self.t - T
-            pad = torch.zeros((C, O, pad_size))
-            sample = torch.cat([sample, pad], dim=2)
-            # TODO: figure out proper center padding?
-            # pad_left = pad_size // 2
-            # pad_right = pad_size - pad_left
-            # pad = torch.zeros((C, O, pad_left))
-            # sample = torch.cat([pad, sample, pad], dim=2)
-            # if pad_right > 0:
-            #     pad = torch.zeros((C, O, pad_right))
-            #     sample = torch.cat([sample, pad], dim=2)
+            if self.is_train:
+                pad_left = random.randint(0, pad_size)
+            else:
+                pad_left = pad_size // 2  # Center padding for validation
+            pad_right = pad_size - pad_left
+            pad_left_tensor = torch.zeros((C, O, pad_left))
+            pad_right_tensor = torch.zeros((C, O, pad_right))
+            sample = torch.cat([pad_left_tensor, sample, pad_right_tensor], dim=2)
         return sample
