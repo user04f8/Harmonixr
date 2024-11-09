@@ -8,29 +8,31 @@ torch.set_float32_matmul_precision('high')
 
 TICKS_PER_MINUTE = 20 * 60
 
+hparams = {
+    'embedding_dim': 256,
+    'data_dir': './data',
+    't': 1 * TICKS_PER_MINUTE,
+    'o': 6, 
+    'batch_size': 4 * 26,
+    'lr': 5e-6,
+    'threshold': 0.2,
+    'num_conv_layers': 4,
+    'conv_channels': [32, 64, 128, 256],
+    'conv_kernel_sizes': [(7,3,5), (5,3,5), (3,3,3), (3,3,3)],
+    'conv_strides': [(1,1,2), (1,1,2), (1,1,2), (1,1,2)],
+    'conv_paddings': [(2,1,2), (2,1,2), (1,1,1), (1,1,1)],
+    'dropout_rates': [0.2, 0.2, 0.2, 0.2],
+    'maxpool_kernel_sizes': [(1,1,2), (1,1,2), (1,1,2), (1,1,2)],
+    'transformer_d_model': 256,
+    'transformer_nhead': 8,
+    'transformer_num_layers': 4,
+    'fc_hidden_dims': [512, 256],
+    'weight_decay': 1e-5,
+    'use_AdamW': True
+}
+
 if __name__ == '__main__':
-    hparams = {
-        'embedding_dim': 256,
-        'data_dir': './data',
-        't': 1 * TICKS_PER_MINUTE,
-        'o': 6, 
-        'batch_size': 4 * 26,
-        'lr': 1e-5,
-        'threshold': 0.2,
-        'num_conv_layers': 4,
-        'conv_channels': [32, 64, 128, 256],
-        'conv_kernel_sizes': [(5,3,5), (5,3,5), (3,3,3), (3,3,3)],
-        'conv_strides': [(1,1,2), (1,1,2), (1,1,2), (1,1,2)],
-        'conv_paddings': [(2,1,2), (2,1,2), (1,1,1), (1,1,1)],
-        'dropout_rates': [0.2, 0.2, 0.2, 0.2],
-        'maxpool_kernel_sizes': [(1,1,2), (1,1,2), (1,1,2), (1,1,2)],
-        'transformer_d_model': 256,
-        'transformer_nhead': 8,
-        'transformer_num_layers': 4,
-        'fc_hidden_dims': [512, 256],
-        'weight_decay': 0,
-        'use_AdamW': False
-    }
+    
 
     # hparams = {
     #     'embedding_dim': 128,

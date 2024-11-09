@@ -104,7 +104,7 @@ class MIDIClassifier(pl.LightningModule):
             dropout=0.1,
             activation='relu',
             layer_norm_eps=1e-5,
-            batch_first=False,  # seq_len as first dimension
+            # batch_first=False,  # seq_len as first dimension
             norm_first=False
         )
         self.transformer = nn.TransformerEncoder(
