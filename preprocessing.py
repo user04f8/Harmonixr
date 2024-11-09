@@ -1,5 +1,6 @@
 import os
 import numpy as np
+import torch
 import mido
 from collections import defaultdict
 from tqdm import tqdm
@@ -18,7 +19,7 @@ def transpose_pitch(midi_note):
     pitch_class = (midi_note - 5) % 12  # Shift C-based octave to start from F
     return pitch_class
 
-def midi_to_array(filepath, time_resolution_ms=10):
+def midi_to_array(filepath, time_resolution_ms=50):
     """Encodes MIDI file data into a numpy array for pitch, octave, and time within a 6-octave range (F1 to E7)."""
     
     # Define the 6-octave range (F1 to E7)
@@ -48,7 +49,7 @@ def midi_to_array(filepath, time_resolution_ms=10):
     
     # Set up array dimensions based on the time grid
     time_steps = int(np.ceil(total_ms / time_resolution_ms))
-    midi_array = np.zeros((len(pitch_range), len(octave_range), time_steps), dtype=int)
+    midi_array = np.zeros((len(pitch_range), len(octave_range), time_steps), dtype=np.uint8)
 
     # Process MIDI events and fill in the array
     current_time_ms = 0
@@ -75,16 +76,16 @@ def midi_to_array(filepath, time_resolution_ms=10):
     
     return midi_array
 
-def process_and_save_to_npz(folder_path, output_file="processed_midi.npz", time_resolution_ms=10):
-    """Processes each MIDI file and saves all data in a single npz file."""
+def process_midi_folder(folder_path, time_resolution_ms=10):
+    """Processes each MIDI file, creates a list of tensors (no padding) and saves a composer embedding vector."""
     composer_to_id = {}
+    piece_arrays = []
     composer_ids = []
-    piece_arrays = {}
-    
+
     # Get list of all MIDI files
     midi_files = [f for f in os.listdir(folder_path) if f.endswith('.mid')]
     
-    # Process files with a progress bar
+    # Parse files with a progress bar
     for filename in tqdm(midi_files, desc="Processing MIDI files"):
         composer, piece = parse_filename(filename)
         if composer not in composer_to_id:
@@ -93,15 +94,31 @@ def process_and_save_to_npz(folder_path, output_file="processed_midi.npz", time_
         file_path = os.path.join(folder_path, filename)
         midi_array = midi_to_array(file_path, time_resolution_ms)
         
-        # Save each piece with a unique key in the dictionary
-        piece_key = f"{composer}_{piece}".replace(" ", "_")
-        piece_arrays[piece_key] = midi_array
+        # Convert to PyTorch tensor with uint8 type
+        piece_arrays.append(torch.tensor(midi_array, dtype=torch.uint8))
         composer_ids.append(composer_to_id[composer])
 
-    # Save all data into a single npz file
-    np.savez_compressed(output_file, **piece_arrays, composer_vector=np.array(composer_ids), composer_mapping=composer_to_id)
-    print(f"All data saved to {output_file}")
+    # Save composer embedding vector as a tensor
+    composer_vector = torch.tensor(composer_ids, dtype=torch.long)
+    
+    # Save composer-to-id mapping
+    with open("composer_mapping.txt", "w") as f:
+        for composer, composer_id in composer_to_id.items():
+            f.write(f"{composer_id}: {composer}\n")
+    
+    return piece_arrays, composer_vector
+
+def save_tensor(piece_arrays, composer_vector, tensor_path="midi_pieces.pt", composer_vector_path="composer_vector.pt"):
+    """Saves the list of piece tensors and composer vector to the specified paths."""
+    torch.save(piece_arrays, tensor_path)  # Save list of piece tensors
+    torch.save(composer_vector, composer_vector_path)  # Save composer vector
+    print(f"Piece tensors saved to {tensor_path}")
+    print(f"Composer vector saved to {composer_vector_path}")
 
 # Usage example
 folder_path = 'GiantMIDI-PIano/surname_checked_midis_v1.2/surname_checked_midis' # Replace with the path to your MIDI files
-process_and_save_to_npz(folder_path, output_file="processed_midi.npz")
+time_resolution_ms = 50  # Define the time grid in milliseconds
+
+# Process the folder and save the tensor and composer vector
+piece_arrays, composer_vector = process_midi_folder(folder_path, time_resolution_ms)
+save_tensor(piece_arrays, composer_vector)
