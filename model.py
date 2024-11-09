@@ -49,7 +49,7 @@ class MIDIClassifier(pl.LightningModule):
         fc_hidden_dims=None,
         weight_decay=1e-5,
         use_AdamW=True,
-        cl_margin=2.0
+        cl_margin=1.0
     ):
         super(MIDIClassifier, self).__init__()
         self.save_hyperparameters()
