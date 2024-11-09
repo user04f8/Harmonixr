@@ -48,7 +48,8 @@ class MIDIClassifier(pl.LightningModule):
         transformer_num_layers=6,
         fc_hidden_dims=None,
         weight_decay=1e-5,
-        use_AdamW=True
+        use_AdamW=True,
+        cl_margin=2.0
     ):
         super(MIDIClassifier, self).__init__()
         self.save_hyperparameters()
@@ -128,7 +129,7 @@ class MIDIClassifier(pl.LightningModule):
                 nn.init.xavier_uniform_(layer.weight)
 
         # Contrastive Loss
-        self.criterion = ContrastiveLoss(margin=threshold)
+        self.criterion = ContrastiveLoss(margin=cl_margin)
 
     def _compute_feature_dim(self):
         # Function to compute the output size after convolution and pooling
