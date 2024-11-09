@@ -30,7 +30,7 @@ def load_composer_mapping(mapping_file='data/composer_mapping.txt'):
     return composer_mapping
 
 class MIDISingleDataset(Dataset):
-    def __init__(self, data_dir, t, n_composers=None):
+    def __init__(self, data_dir, t, n_composers=None, n_pieces_threshold=None):
         self.t = t
         self.data_dir = data_dir
 
@@ -52,11 +52,22 @@ class MIDISingleDataset(Dataset):
         # Ensure labels are integers
         self.y = [int(label.item()) for label in self.y]
 
-        # Filter composers if n_composers is specified
-        if n_composers is not None:
-            # Get composer indices to include
-            composers_to_include = sorted(set(self.y))[:n_composers]
+        # Filter composers based on n_pieces_threshold
+        if n_pieces_threshold is not None:
+            # Count pieces per composer
+            from collections import Counter
+            composer_counts = Counter(self.y)
+            composers_to_include = [composer for composer, count in composer_counts.items() if count >= n_pieces_threshold]
+
+            # Filter dataset by composers with enough pieces
             filtered_indices = [i for i, composer_idx in enumerate(self.y) if composer_idx in composers_to_include]
+            self.x = [self.x[i] for i in filtered_indices]
+            self.y = [self.y[i] for i in filtered_indices]
+
+        # Further filter composers if n_composers is specified
+        if n_composers is not None:
+            unique_composers = sorted(set(self.y))[:n_composers]
+            filtered_indices = [i for i, composer_idx in enumerate(self.y) if composer_idx in unique_composers]
             self.x = [self.x[i] for i in filtered_indices]
             self.y = [self.y[i] for i in filtered_indices]
 
@@ -154,7 +165,7 @@ def visualize_tsne(embeddings, composer_names):
         z=centroids['z'],
         mode='markers+text',
         marker=dict(
-            size=centroids['sample_count'] / centroids['sample_count'].max() * 30 + 10,  # Scale size
+            size=centroids['sample_count'] / centroids['sample_count'].max() * 40 + 2,  # Scale size
             color=[centroid_colors[composer] for composer in centroids.index],
             opacity=0.8,
         ),
@@ -225,14 +236,15 @@ def plot_distance_histogram(embeddings, labels, num_pairs=1000):
                       yaxis_title='Density')
     fig.show()
 
-def plot_roc_curve(embeddings, labels, downsample_rate=10):
+def plot_roc_curve(embeddings, labels, max_points=500):
     """
-    Plot ROC curve using precomputed embeddings and labels, with sparsity and optimized layout.
+    Plot ROC curve using precomputed embeddings and labels, with threshold values displayed and
+    points colored by the mixed accuracy metric. Optimized for performance by downsampling.
 
     Args:
         embeddings (np.ndarray): Precomputed embeddings.
         labels (np.ndarray): Composer labels.
-        downsample_rate (int): Factor to downsample the points for efficiency.
+        max_points (int): Maximum number of threshold points to display.
     """
     # Compute pairwise distances and labels
     pairwise_distances = squareform(pdist(embeddings, metric='euclidean'))
@@ -241,21 +253,16 @@ def plot_roc_curve(embeddings, labels, downsample_rate=10):
     # Extract upper triangle indices to avoid duplicates and self-comparisons
     triu_indices = np.triu_indices_from(pairwise_distances, k=1)
     distances = pairwise_distances[triu_indices]
-    labels = pairwise_labels[triu_indices]
+    labels_binary = pairwise_labels[triu_indices]
 
-    fpr, tpr, thresholds = roc_curve(labels, -distances)  # Negative distances because lower distances imply positive class
+    # Compute ROC curve
+    fpr, tpr, thresholds = roc_curve(labels_binary, -distances)  # Negative distances because lower distances imply positive class
     roc_auc = auc(fpr, tpr)
 
-    # Downsample fpr, tpr, and val_acc_mixed
+    # Calculate val_acc_similar, val_acc_dissimilar, and val_acc_mixed
     val_acc_similar = tpr
     val_acc_dissimilar = 1 - fpr
     val_acc_mixed = 0.5 * (val_acc_similar + val_acc_dissimilar)
-
-    # Downsample for efficiency
-    fpr = fpr[::downsample_rate]
-    tpr = tpr[::downsample_rate]
-    val_acc_mixed = val_acc_mixed[::downsample_rate]
-    thresholds = thresholds[::downsample_rate]
 
     # Find index of the optimal threshold maximizing val_acc_mixed
     optimal_index = np.argmax(val_acc_mixed)
@@ -263,46 +270,84 @@ def plot_roc_curve(embeddings, labels, downsample_rate=10):
     optimal_tpr = tpr[optimal_index]
     optimal_threshold = thresholds[optimal_index]
 
+    # Downsample points if necessary
+    if len(fpr) > max_points:
+        # Select indices evenly spaced across the ROC curve
+        indices = np.linspace(0, len(fpr) - 1, max_points).astype(int)
+        fpr_sampled = fpr[indices]
+        tpr_sampled = tpr[indices]
+        thresholds_sampled = thresholds[indices]
+        val_acc_mixed_sampled = val_acc_mixed[indices]
+    else:
+        fpr_sampled = fpr
+        tpr_sampled = tpr
+        thresholds_sampled = thresholds
+        val_acc_mixed_sampled = val_acc_mixed
+
     fig = go.Figure()
 
-    # Main ROC curve line with downsampled points
-    fig.add_trace(go.Scatter(x=fpr, y=tpr, mode='lines',
-                             name=f'ROC curve (area = {roc_auc:.2f})',
-                             line=dict(color='darkorange', width=2)))
+    # Main ROC curve line
+    fig.add_trace(go.Scatter(
+        x=fpr,
+        y=tpr,
+        mode='lines',
+        name=f'ROC curve (AUC = {roc_auc:.2f})',
+        line=dict(color='darkorange', width=2)
+    ))
 
     # Random guess line
-    fig.add_trace(go.Scatter(x=[0,1], y=[0,1], mode='lines',
-                             name='Random Guess',
-                             line=dict(color='navy', width=2, dash='dash')))
-
-    # Add sparse scatter points colored by val_acc_mixed
     fig.add_trace(go.Scatter(
-        x=fpr, y=tpr, mode='markers',
-        marker=dict(size=6, color=val_acc_mixed, colorscale='Viridis', 
-                    colorbar=dict(title='val_acc_mixed', x=1.1)),
-        hoverinfo="none",  # Disable hover to improve performance
-        name='Sparse Threshold Points'
+        x=[0, 1],
+        y=[0, 1],
+        mode='lines',
+        name='Random Guess',
+        line=dict(color='navy', width=2, dash='dash')
+    ))
+
+    # Add downsampled scatter points colored by val_acc_mixed
+    fig.add_trace(go.Scattergl(
+        x=fpr_sampled,
+        y=tpr_sampled,
+        mode='markers',
+        marker=dict(
+            size=6,
+            color=val_acc_mixed_sampled,
+            colorscale='Viridis',
+            colorbar=dict(title='val_acc_mixed', x=1.15),
+            showscale=True
+        ),
+        text=[f"Threshold: {-t:.3f}<br>val_acc_mixed: {m:.3f}" for t, m in zip(thresholds_sampled, val_acc_mixed_sampled)],
+        hoverinfo="text",
+        name='Threshold Points'
     ))
 
     # Highlight the optimal point
     fig.add_trace(go.Scatter(
-        x=[optimal_fpr], y=[optimal_tpr],
+        x=[optimal_fpr],
+        y=[optimal_tpr],
         mode='markers+text',
-        marker=dict(size=10, color='red', symbol='x'),
-        text=[f"Optimal Threshold: {optimal_threshold:.2f}<br>val_acc_mixed: {val_acc_mixed[optimal_index]:.2f}"],
+        marker=dict(size=12, color='red', symbol='x'),
+        text=[f"Optimal Threshold: {-optimal_threshold:.4f}<br>val_acc_mixed: {val_acc_mixed[optimal_index]:.3f}"],
         textposition="top right",
         hoverinfo="text",
         name='Optimal Threshold'
     ))
 
-    # Update layout
+    # Update layout to adjust legend and colorbar positions
     fig.update_layout(
         title='Receiver Operating Characteristic (ROC) Curve',
         xaxis_title='False Positive Rate (1 - val_acc_dissimilar)',
         yaxis_title='True Positive Rate (val_acc_similar)',
         xaxis=dict(range=[-0.01, 1.0]),
         yaxis=dict(range=[0.0, 1.01]),
-        legend=dict(x=0.8, y=0.2)
+        legend=dict(
+            x=0.8,
+            y=0.2,
+            bgcolor='rgba(255, 255, 255, 0.8)',
+            bordercolor='rgba(0,0,0,0.5)',
+            borderwidth=1
+        ),
+        margin=dict(r=100)
     )
 
     fig.show()

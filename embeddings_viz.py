@@ -10,8 +10,8 @@ def main():
     print("Loading dataset")
     data_dir = model.hparams.data_dir
     t = model.hparams.t
-    n_composers = 300
-    dataset = MIDISingleDataset(data_dir=data_dir, t=t, n_composers=n_composers)
+    
+    dataset = MIDISingleDataset(data_dir=data_dir, t=t, n_composers=None, n_pieces_threshold=6)
 
     embeddings, labels, composer_names = extract_embeddings(model, dataset, device)
 
