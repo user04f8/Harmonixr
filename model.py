@@ -50,7 +50,6 @@ class MIDIClassifier(pl.LightningModule):
         weight_decay=1e-5,
     ):
         super(MIDIClassifier, self).__init__()
-        # Save hyperparameters
         self.save_hyperparameters(ignore=['conv_channels', 'conv_kernel_sizes', 'conv_strides',
                                           'conv_paddings', 'dropout_rates', 'maxpool_kernel_sizes',
                                           'fc_hidden_dims'])
@@ -70,6 +69,16 @@ class MIDIClassifier(pl.LightningModule):
         if fc_hidden_dims is None:
             fc_hidden_dims = [256, 512]
         
+        self.conv_layers_params = {
+            'num_conv_layers': num_conv_layers,
+            'conv_channels': conv_channels,
+            'conv_kernel_sizes': conv_kernel_sizes,
+            'conv_strides': conv_strides,
+            'conv_paddings': conv_paddings,
+            'dropout_rates': dropout_rates,
+            'maxpool_kernel_sizes': maxpool_kernel_sizes,
+        }
+
         # Build convolutional layers
         conv_layers = []
         in_channels = 1  # Starting from 1 channel after unsqueeze
@@ -95,17 +104,8 @@ class MIDIClassifier(pl.LightningModule):
 
         self.conv = nn.Sequential(*conv_layers)
         
-        # Determine the feature dimension after convolution
-        with torch.no_grad():
-            dummy_input = torch.zeros(1, 1, 12, o, t)  # (batch_size, channels, pitch, octave, time)
-            dummy_output = self.conv(dummy_input)
-            _, C_out, P_out, O_out, T_out = dummy_output.shape
-            self.feature_dim = C_out * P_out * O_out
-            self.seq_len = T_out
-
-        # Feature projection to match transformer input dimension
-        self.feature_projection = nn.Linear(self.feature_dim, transformer_d_model)
-        nn.init.xavier_uniform_(self.feature_projection.weight)
+        # Initialize feature projection as None
+        self.feature_projection = None
 
         # Transformer encoder with Layer Normalization
         encoder_layer = nn.TransformerEncoderLayer(
@@ -116,7 +116,7 @@ class MIDIClassifier(pl.LightningModule):
             activation='relu',
             layer_norm_eps=1e-5,
             batch_first=False,  # seq_len as first dimension
-            norm_first=True
+            norm_first=False
         )
         self.transformer = nn.TransformerEncoder(
             encoder_layer,
@@ -148,6 +148,14 @@ class MIDIClassifier(pl.LightningModule):
         # Flatten for transformer: (batch, features, seq_len)
         x = rearrange(x, 'b c p o t -> b (c p o) t')
         x = x.permute(2, 0, 1)  # (seq_len, batch, features)
+        feature_dim = x.size(-1)
+
+        # Initialize feature_projection if not already done
+        if self.feature_projection is None:
+            self.feature_projection = nn.Linear(feature_dim, self.hparams.transformer_d_model)
+            nn.init.xavier_uniform_(self.feature_projection.weight)
+            self.feature_projection.to(self.device)
+
         x = self.feature_projection(x)  # Project features to transformer_d_model
         x = self.transformer(x)
         x = x.mean(dim=0)  # (batch, features)
@@ -184,22 +192,15 @@ class MIDIClassifier(pl.LightningModule):
             weight_decay=self.hparams.weight_decay
         )
         scheduler = {
-            'scheduler': ReduceLROnPlateau(optimizer, patience=3, verbose=True),
-            'monitor': 'val_acc',
-            'mode': 'max'
+            'scheduler': ReduceLROnPlateau(optimizer, mode='max', patience=3, verbose=True),
+            'monitor': 'val_acc'
         }
         return [optimizer], [scheduler]
 
-    def optimizer_step(self, epoch, batch_idx, optimizer, optimizer_idx=0,
-                       optimizer_closure=None, on_tpu=False, using_native_amp=False, using_lbfgs=False):
-        # Gradient Clipping
-        nn.utils.clip_grad_norm_(self.parameters(), max_norm=1.0)
-        optimizer.step(closure=optimizer_closure)
-
     def train_dataloader(self):
         train_dataset = MIDIDataset(self.hparams.data_dir, self.hparams.t, split='train')
-        return DataLoader(train_dataset, batch_size=self.hparams.batch_size, shuffle=True, num_workers=4)
+        return DataLoader(train_dataset, batch_size=self.hparams.batch_size, shuffle=True, num_workers=0)
 
     def val_dataloader(self):
         val_dataset = MIDIDataset(self.hparams.data_dir, self.hparams.t, split='val')
-        return DataLoader(val_dataset, batch_size=self.hparams.batch_size, num_workers=4)
+        return DataLoader(val_dataset, batch_size=self.hparams.batch_size, num_workers=0)

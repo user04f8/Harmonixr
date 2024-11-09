@@ -1,3 +1,4 @@
+import torch
 import pytorch_lightning as pl
 from pytorch_lightning.callbacks import EarlyStopping, ModelCheckpoint
 from pytorch_lightning.loggers import TensorBoardLogger
@@ -55,7 +56,12 @@ if __name__ == '__main__':
         max_epochs=50,
         logger=logger,
         callbacks=[early_stop_callback, checkpoint_callback],
+        # accelerator='gpu' if torch.cuda.is_available() else 'cpu',
+        # devices=8,
         gradient_clip_val=1.0,
+        enable_progress_bar=True,
+        log_every_n_steps=5
     )
 
+    # Train the model
     trainer.fit(model)

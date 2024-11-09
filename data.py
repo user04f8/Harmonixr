@@ -1,7 +1,8 @@
 import torch
-from torch.utils.data import Dataset, DataLoader
+from torch.utils.data import Dataset
 import os
 import random
+import warnings
 
 class MIDIDataset(Dataset):
     def __init__(self, data_dir, t, split='train'):
@@ -10,8 +11,10 @@ class MIDIDataset(Dataset):
         self.split = split
         
         # Load data
-        self.x = torch.load(os.path.join(data_dir, f'x_{split}.pt'))
-        self.y = torch.load(os.path.join(data_dir, f'y_{split}.pt'))
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", category=FutureWarning)
+            self.x = torch.load(os.path.join(data_dir, f'x_{split}.pt'))
+            self.y = torch.load(os.path.join(data_dir, f'y_{split}.pt'))
         
         # Build index by composer
         self.composer_indices = {}
