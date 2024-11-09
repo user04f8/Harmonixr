@@ -48,6 +48,7 @@ class MIDIClassifier(pl.LightningModule):
         transformer_num_layers=6,
         fc_hidden_dims=None,
         weight_decay=1e-5,
+        use_AdamW=True
     ):
         super(MIDIClassifier, self).__init__()
         self.save_hyperparameters()
@@ -127,7 +128,7 @@ class MIDIClassifier(pl.LightningModule):
                 nn.init.xavier_uniform_(layer.weight)
 
         # Contrastive Loss
-        self.criterion = ContrastiveLoss(margin=1.0)
+        self.criterion = ContrastiveLoss(margin=threshold)
 
     def _compute_feature_dim(self):
         # Function to compute the output size after convolution and pooling
@@ -182,6 +183,7 @@ class MIDIClassifier(pl.LightningModule):
         x = self.transformer(x)
         x = x.mean(dim=0)  # (batch, features)
         x = self.fc(x)
+        x = nn.functional.normalize(x, p=2, dim=1)  # Euclidean normalization NOTE lose one degree of freedom in exchange for more stability?
         return x
 
     def forward(self, x1, x2):
@@ -248,11 +250,17 @@ class MIDIClassifier(pl.LightningModule):
         return {'val_loss': loss, 'val_acc': acc}
     
     def configure_optimizers(self):
-        optimizer = torch.optim.AdamW(
-            self.parameters(),
-            lr=self.hparams.lr,
-            weight_decay=self.hparams.weight_decay
-        )
+        if self.hparams.use_AdamW:
+            optimizer = torch.optim.AdamW(
+                self.parameters(),
+                lr=self.hparams.lr,
+                weight_decay=self.hparams.weight_decay
+            )
+        else:
+            optimizer = torch.optim.Adam(
+                self.parameters(),
+                lr=self.hparams.lr
+            )
         # Total number of training steps
         num_training_steps = self.trainer.estimated_stepping_batches
         # Number of warmup steps
