@@ -139,7 +139,8 @@ class MIDIClassifier(pl.LightningModule):
             if isinstance(layer, nn.Linear):
                 nn.init.xavier_uniform_(layer.weight)
 
-        self.criterion = nn.MarginRankingLoss(margin=1.0)
+        # Contrastive Loss
+        self.criterion = ContrastiveLoss(margin=1.0)
 
     def forward_one(self, x):
         # x shape: (batch, 12, o, t)
@@ -171,19 +172,22 @@ class MIDIClassifier(pl.LightningModule):
 
     def training_step(self, batch, batch_idx):
         (x1, x2), y = batch
-        distance, _, _ = self.forward(x1, x2)
-        target = 2 * y - 1  # Convert {0,1} to {-1,1}
-        loss = self.criterion(distance, torch.zeros_like(distance), target)
+        distance, emb1, emb2 = self.forward(x1, x2)
+        y = y.float()
+        loss = self.criterion(emb1, emb2, y)
         self.log('train_loss', loss, on_step=True, on_epoch=True, prog_bar=True)
         return loss
 
     def validation_step(self, batch, batch_idx):
         (x1, x2), y = batch
-        distance, _, _ = self.forward(x1, x2)
+        distance, emb1, emb2 = self.forward(x1, x2)
+        y = y.float()
+        loss = self.criterion(emb1, emb2, y)
         preds = (distance < self.hparams.threshold).long()
-        acc = (preds == y).float().mean()
+        acc = (preds == y.long()).float().mean()
+        self.log('val_loss', loss, on_step=False, on_epoch=True, prog_bar=True)
         self.log('val_acc', acc, on_step=False, on_epoch=True, prog_bar=True)
-        return acc
+        return {'val_loss': loss, 'val_acc': acc}
 
     def configure_optimizers(self):
         optimizer = torch.optim.AdamW(
@@ -192,7 +196,7 @@ class MIDIClassifier(pl.LightningModule):
             weight_decay=self.hparams.weight_decay
         )
         scheduler = {
-            'scheduler': ReduceLROnPlateau(optimizer, mode='max', patience=3, verbose=True),
+            'scheduler': ReduceLROnPlateau(optimizer, mode='max', patience=3),
             'monitor': 'val_acc'
         }
         return [optimizer], [scheduler]
@@ -204,3 +208,16 @@ class MIDIClassifier(pl.LightningModule):
     def val_dataloader(self):
         val_dataset = MIDIDataset(self.hparams.data_dir, self.hparams.t, split='val')
         return DataLoader(val_dataset, batch_size=self.hparams.batch_size, num_workers=0)
+
+class ContrastiveLoss(nn.Module):
+    def __init__(self, margin=1.0):
+        super(ContrastiveLoss, self).__init__()
+        self.margin = margin
+
+    def forward(self, emb1, emb2, label):
+        # Compute Euclidean distance
+        distance = torch.norm(emb1 - emb2, p=2, dim=1)
+        # Contrastive loss calculation
+        loss = (label) * 0.5 * distance.pow(2) + \
+               (1 - label) * 0.5 * torch.clamp(self.margin - distance, min=0.0).pow(2)
+        return loss.mean()
