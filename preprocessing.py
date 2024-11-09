@@ -1,0 +1,107 @@
+import os
+import numpy as np
+import mido
+from collections import defaultdict
+from tqdm import tqdm
+
+def parse_filename(filename):
+    """Parses the composer and piece name from the filename."""
+    parts = filename.split(',')
+    composer_last = parts[0].strip()
+    composer_first = parts[1].strip()
+    composer_name = f"{composer_last} {composer_first}"
+    piece_name = ','.join(parts[2:]).strip().replace('.mid', '')
+    return composer_name, piece_name
+
+def transpose_pitch(midi_note):
+    """Transpose MIDI pitch to start at F within each octave (e.g., F, F#, G, ..., E)."""
+    pitch_class = (midi_note - 5) % 12  # Shift C-based octave to start from F
+    return pitch_class
+
+def midi_to_array(filepath, time_resolution_ms=10):
+    """Encodes MIDI file data into a numpy array for pitch, octave, and time within a 6-octave range (F1 to E7)."""
+    
+    # Define the 6-octave range (F1 to E7)
+    min_midi_note = 29  # F1 (MIDI note 29)
+    max_midi_note = 88  # E7 (MIDI note 88)
+    octave_range = range(1, 7)  # Octaves 1 through 6
+    pitch_range = range(12)  # Transposed pitches within an octave (0 to 11, starting from F)
+    
+    # Load MIDI file and set up time grid
+    mid = mido.MidiFile(filepath)
+    ticks_per_beat = mid.ticks_per_beat
+    tempo = 500000  # Default tempo in microseconds per beat (120 BPM)
+    
+    # Find the tempo if it's set in the MIDI file
+    for track in mid.tracks:
+        for msg in track:
+            if msg.type == 'set_tempo':
+                tempo = msg.tempo
+                break
+    
+    # Calculate milliseconds per tick
+    ms_per_tick = (tempo / ticks_per_beat) / 1000
+
+    # Determine total time in milliseconds
+    total_ticks = sum(msg.time for track in mid.tracks for msg in track)
+    total_ms = int(total_ticks * ms_per_tick)
+    
+    # Set up array dimensions based on the time grid
+    time_steps = int(np.ceil(total_ms / time_resolution_ms))
+    midi_array = np.zeros((len(pitch_range), len(octave_range), time_steps), dtype=int)
+
+    # Process MIDI events and fill in the array
+    current_time_ms = 0
+    active_notes = {}  # Track active notes by (pitch, octave)
+    
+    for track in mid.tracks:
+        for msg in track:
+            current_time_ms += int(msg.time * ms_per_tick)
+            time_index = int(current_time_ms / time_resolution_ms)
+            
+            if msg.type == 'note_on' and msg.velocity > 0:
+                pitch = transpose_pitch(msg.note)  # Transpose pitch to F-based octave
+                octave = (msg.note // 12)
+                if min_midi_note <= msg.note <= max_midi_note and octave in octave_range:
+                    active_notes[(pitch, octave)] = time_index
+            
+            elif (msg.type == 'note_off' or (msg.type == 'note_on' and msg.velocity == 0)):
+                pitch = transpose_pitch(msg.note)
+                octave = (msg.note // 12)
+                if (pitch, octave) in active_notes and min_midi_note <= msg.note <= max_midi_note:
+                    start_time = active_notes.pop((pitch, octave))
+                    for t in range(start_time, time_index):
+                        midi_array[pitch, octave - 1, t] = 1  # Offset by 1 to match F1 as Octave 1
+    
+    return midi_array
+
+def process_and_save_to_npz(folder_path, output_file="processed_midi.npz", time_resolution_ms=10):
+    """Processes each MIDI file and saves all data in a single npz file."""
+    composer_to_id = {}
+    composer_ids = []
+    piece_arrays = {}
+    
+    # Get list of all MIDI files
+    midi_files = [f for f in os.listdir(folder_path) if f.endswith('.mid')]
+    
+    # Process files with a progress bar
+    for filename in tqdm(midi_files, desc="Processing MIDI files"):
+        composer, piece = parse_filename(filename)
+        if composer not in composer_to_id:
+            composer_to_id[composer] = len(composer_to_id)
+        
+        file_path = os.path.join(folder_path, filename)
+        midi_array = midi_to_array(file_path, time_resolution_ms)
+        
+        # Save each piece with a unique key in the dictionary
+        piece_key = f"{composer}_{piece}".replace(" ", "_")
+        piece_arrays[piece_key] = midi_array
+        composer_ids.append(composer_to_id[composer])
+
+    # Save all data into a single npz file
+    np.savez_compressed(output_file, **piece_arrays, composer_vector=np.array(composer_ids), composer_mapping=composer_to_id)
+    print(f"All data saved to {output_file}")
+
+# Usage example
+folder_path = 'GiantMIDI-PIano/surname_checked_midis_v1.2/surname_checked_midis' # Replace with the path to your MIDI files
+process_and_save_to_npz(folder_path, output_file="processed_midi.npz")
