@@ -3,14 +3,14 @@ import torch
 
 def main():
     print("Loading model")
-    checkpoint_path = 'tb_logs/BIG-MIDIClassifier/version_14/checkpoints/last.ckpt'
+    checkpoint_path = r'archive\epoch=52-val_acc_mixed=0.62.ckpt'
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     model = load_model(checkpoint_path, device=device)
 
     print("Loading dataset")
-    data_dir = model.hparams.data_dir  # Assuming data_dir is stored in hparams
-    t = model.hparams.t  # Assuming t is stored in hparams
-    n_composers = 10  # Adjust as needed
+    data_dir = model.hparams.data_dir
+    t = model.hparams.t
+    n_composers = 50 
     dataset = MIDISingleDataset(data_dir=data_dir, t=t, n_composers=n_composers)
 
     embeddings, labels, composer_names = extract_embeddings(model, dataset, device)
