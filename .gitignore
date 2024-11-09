@@ -1,3 +1,8 @@
 data
 __pycache__
 lightning_logs
+harmony/
+GiantMIDI-PIano/
+
+# TODO: add data download directions
+# TODO: restructure entirely
