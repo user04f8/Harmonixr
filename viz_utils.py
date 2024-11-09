@@ -5,8 +5,6 @@ from torch.utils.data import Dataset, DataLoader
 from sklearn.manifold import TSNE
 import plotly.express as px
 import plotly.graph_objects as go
-import matplotlib.cm as cm
-import matplotlib.colors as mcolors
 from sklearn.metrics import roc_curve, auc
 from scipy.spatial.distance import pdist, squareform
 from tqdm import tqdm
@@ -123,20 +121,25 @@ def visualize_tsne(embeddings, composer_names):
         'composer': composer_names
     })
 
-    # Calculate a color mapping based on x + y + z
-    df['color_value'] = df['x'] + df['y'] + df['z']
-    norm = mcolors.Normalize(vmin=df['color_value'].min(), vmax=df['color_value'].max())
-    cmap = cm.get_cmap('plasma')  # You can change to another colormap like 'viridis' or 'cividis'
+    # Calculate centroids and their color values
+    centroids = df.groupby('composer')[['x', 'y', 'z']].mean()
+    centroids['color_value'] = centroids.sum(axis=1)  # Use x + y + z for each centroid's color basis
 
-    # Map the normalized color values to the colormap
-    df['color'] = df['color_value'].apply(lambda val: mcolors.rgb2hex(cmap(norm(val))))
+    # Normalize colors and assign each cluster a unique color using Plotly's colormap
+    color_scale = px.colors.sequential.Rainbow  # Choose any Plotly colormap like 'Viridis', 'Cividis', etc.
+    num_colors = len(color_scale)
+    centroids['color_index'] = pd.qcut(centroids['color_value'], num_colors, labels=False)  # Map to color scale
+    centroid_colors = {composer: color_scale[idx] for composer, idx in centroids['color_index'].items()}
 
-    # Create the 3D scatter plot with the colormap-based colors
+    # Apply the color for each cluster
+    df['color'] = df['composer'].map(centroid_colors)
+
+    # Create the 3D scatter plot with consistent cluster colors
     fig = px.scatter_3d(df, x='x', y='y', z='z', color='composer', hover_name='composer')
     for trace, composer in zip(fig.data, df['composer'].unique()):
-        trace.marker.color = df[df['composer'] == composer]['color'].tolist()
+        trace.marker.color = df[df['composer'] == composer]['color'].iloc[0]
 
-    fig.update_layout(title='3D t-SNE of Embeddings by Composer with Colorful Colormap')
+    fig.update_layout(title='3D t-SNE of Embeddings by Composer with Cluster-Based Colors')
     fig.show()
 
 def plot_distance_histogram(embeddings, labels, num_pairs=1000):

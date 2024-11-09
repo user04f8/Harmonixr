@@ -10,14 +10,14 @@ def main():
     print("Loading dataset")
     data_dir = model.hparams.data_dir
     t = model.hparams.t
-    n_composers = 100
+    n_composers = 300
     dataset = MIDISingleDataset(data_dir=data_dir, t=t, n_composers=n_composers)
 
     embeddings, labels, composer_names = extract_embeddings(model, dataset, device)
 
     visualize_tsne(embeddings, composer_names)
 
-    plot_distance_histogram(embeddings, labels, num_pairs=1000)
+    plot_distance_histogram(embeddings, labels, num_pairs=10000)
 
     plot_roc_curve(embeddings, labels)
 
