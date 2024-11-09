@@ -22,12 +22,15 @@ def generate_synthetic_data(data_dir, num_samples=1000, t=128, o=5, T=200):
     y_data = []
 
     for i in range(num_samples):
-        # Create a random tensor of shape (12, o, T) for each sample
-        midi_data = torch.rand(12, o, T)
-        x_data.append(midi_data)
-        
         # Randomly assign a composer and title
         composer = random.choice(composers)
+
+        var = {'Composer_A': 1, 'Composer_B': 2, 'Composer_C': 3}[composer]
+
+        # Create a random tensor of shape (12, o, T) for each sample
+        midi_data = var * torch.rand(12, o, T)
+        x_data.append(midi_data)
+        
         title = titles[i]
         y_data.append({'composer': composer, 'title': title})
 
