@@ -169,7 +169,7 @@ def plot_distance_histogram(embeddings, labels, num_pairs=1000):
     })
 
     fig = px.histogram(df_hist, x='Distance', color='Pair Type', nbins=50, barmode='overlay',
-                       histnorm='probability density', opacity=0.6)
+                       histnorm='density', opacity=0.6)
     fig.update_layout(title='Histogram of Pair Distances',
                       xaxis_title='Euclidean Distance between Embeddings',
                       yaxis_title='Density')
@@ -177,7 +177,7 @@ def plot_distance_histogram(embeddings, labels, num_pairs=1000):
 
 def plot_roc_curve(embeddings, labels):
     """
-    Plot ROC curve using precomputed embeddings and labels.
+    Plot ROC curve using precomputed embeddings and labels, with threshold values displayed.
 
     Args:
         embeddings (np.ndarray): Precomputed embeddings.
@@ -192,19 +192,38 @@ def plot_roc_curve(embeddings, labels):
     distances = pairwise_distances[triu_indices]
     labels = pairwise_labels[triu_indices]
 
-    fpr, tpr, thresholds = roc_curve(labels, -distances)  # Negative distances because lower distances imply positive class
+    fpr, tpr, thresholds = roc_curve(labels, -distances)
+    # NOTE: Negative distances because lower distances imply positive class
     roc_auc = auc(fpr, tpr)
 
     fig = go.Figure()
+
+    # Main ROC curve line
     fig.add_trace(go.Scatter(x=fpr, y=tpr, mode='lines',
                              name=f'ROC curve (area = {roc_auc:.2f})',
                              line=dict(color='darkorange', width=2)))
+
+    # Random guess line
     fig.add_trace(go.Scatter(x=[0,1], y=[0,1], mode='lines',
                              name='Random Guess',
                              line=dict(color='navy', width=2, dash='dash')))
-    fig.update_layout(title='Receiver Operating Characteristic (ROC) Curve',
-                      xaxis_title='False Positive Rate',
-                      yaxis_title='True Positive Rate',
-                      xaxis=dict(range=[-0.01, 1.0]),
-                      yaxis=dict(range=[0.0, 1.01]))
+
+    # Add scatter points with threshold annotations
+    fig.add_trace(go.Scatter(
+        x=fpr, y=tpr, mode='markers',
+        marker=dict(size=5, color='blue'),
+        text=[f"Threshold: {-t:.4f}" for t in thresholds],
+        hoverinfo="text",
+        name='Threshold Points'
+    ))
+
+    # Update layout
+    fig.update_layout(
+        title='Receiver Operating Characteristic (ROC) Curve',
+        xaxis_title='False Positive Rate (1-val_acc_dissimilar)',
+        yaxis_title='True Positive Rate (val_acc_similar)',
+        xaxis=dict(range=[-0.01, 1.0]),
+        yaxis=dict(range=[0.0, 1.01])
+    )
+
     fig.show()
