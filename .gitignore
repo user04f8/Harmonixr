@@ -1,4 +1,3 @@
 data
-
-# TODO: add data download directions
-# TODO: restructure entirely
+__pycache__
+lightning_logs
