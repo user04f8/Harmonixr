@@ -144,7 +144,6 @@ class MIDIDataset(Dataset):
                 different_composers.remove(y1)
                 y2 = random.choice(different_composers)
                 idx2 = random.choice(self.composer_indices[y2])
-                print(idx, idx2)
 
             x2 = self.x[idx2]
         else:

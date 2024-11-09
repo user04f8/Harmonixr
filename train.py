@@ -12,9 +12,9 @@ if __name__ == '__main__':
     hparams = {
         'embedding_dim': 256,
         'data_dir': './data',
-        't': 4 * TICKS_PER_MINUTE,
+        't': 1 * TICKS_PER_MINUTE,
         'o': 6, 
-        'batch_size': 26,
+        'batch_size': 4 * 26,
         'lr': 1e-5,
         'threshold': 1.0,
         'num_conv_layers': 4,
