@@ -177,7 +177,8 @@ def plot_distance_histogram(embeddings, labels, num_pairs=1000):
 
 def plot_roc_curve(embeddings, labels):
     """
-    Plot ROC curve using precomputed embeddings and labels, with threshold values displayed.
+    Plot ROC curve using precomputed embeddings and labels, with threshold values displayed and
+    points colored by the mixed accuracy metric.
 
     Args:
         embeddings (np.ndarray): Precomputed embeddings.
@@ -192,9 +193,19 @@ def plot_roc_curve(embeddings, labels):
     distances = pairwise_distances[triu_indices]
     labels = pairwise_labels[triu_indices]
 
-    fpr, tpr, thresholds = roc_curve(labels, -distances)
-    # NOTE: Negative distances because lower distances imply positive class
+    fpr, tpr, thresholds = roc_curve(labels, -distances)  # Negative distances because lower distances imply positive class
     roc_auc = auc(fpr, tpr)
+
+    # Calculate val_acc_similar, val_acc_dissimilar, and val_acc_mixed
+    val_acc_similar = tpr
+    val_acc_dissimilar = 1 - fpr
+    val_acc_mixed = 0.5 * (val_acc_similar + val_acc_dissimilar)
+
+    # Find index of the optimal threshold maximizing val_acc_mixed
+    optimal_index = np.argmax(val_acc_mixed)
+    optimal_fpr = fpr[optimal_index]
+    optimal_tpr = tpr[optimal_index]
+    optimal_threshold = thresholds[optimal_index]
 
     fig = go.Figure()
 
@@ -208,19 +219,30 @@ def plot_roc_curve(embeddings, labels):
                              name='Random Guess',
                              line=dict(color='navy', width=2, dash='dash')))
 
-    # Add scatter points with threshold annotations
+    # Add scatter points colored by val_acc_mixed
     fig.add_trace(go.Scatter(
         x=fpr, y=tpr, mode='markers',
-        marker=dict(size=5, color='blue'),
-        text=[f"Threshold: {-t:.4f}" for t in thresholds],
+        marker=dict(size=6, color=val_acc_mixed, colorscale='Viridis', colorbar=dict(title='val_acc_mixed')),
+        text=[f"Threshold: {-t:.3f}<br>val_acc_mixed: {m:.2f}" for t, m in zip(thresholds, val_acc_mixed)],
         hoverinfo="text",
         name='Threshold Points'
+    ))
+
+    # Highlight the optimal point
+    fig.add_trace(go.Scatter(
+        x=[optimal_fpr], y=[optimal_tpr],
+        mode='markers+text',
+        marker=dict(size=10, color='red', symbol='x'),
+        text=[f"Optimal Threshold: {-optimal_threshold:.5f}<br>val_acc_mixed: {val_acc_mixed[optimal_index]:.2f}"],
+        textposition="top right",
+        hoverinfo="text",
+        name='Optimal Threshold'
     ))
 
     # Update layout
     fig.update_layout(
         title='Receiver Operating Characteristic (ROC) Curve',
-        xaxis_title='False Positive Rate (1-val_acc_dissimilar)',
+        xaxis_title='False Positive Rate (1 - val_acc_dissimilar)',
         yaxis_title='True Positive Rate (val_acc_similar)',
         xaxis=dict(range=[-0.01, 1.0]),
         yaxis=dict(range=[0.0, 1.01])
