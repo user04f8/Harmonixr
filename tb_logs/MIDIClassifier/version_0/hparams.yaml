@@ -1,0 +1,12 @@
+batch_size: 32
+data_dir: ./data
+embedding_dim: 500
+lr: 0.001
+num_conv_layers: 3
+o: 8
+t: 128
+threshold: 0.5
+transformer_d_model: 512
+transformer_nhead: 8
+transformer_num_layers: 6
+weight_decay: 1.0e-05
