@@ -134,13 +134,45 @@ def visualize_tsne(embeddings, composer_names):
     # Apply the color for each cluster
     df['color'] = df['composer'].map(centroid_colors)
 
+    sample_counts = df['composer'].value_counts()
+    centroids['sample_count'] = centroids.index.map(sample_counts)  # Map counts to centroids
+
     # Create the 3D scatter plot with consistent cluster colors
     fig = px.scatter_3d(df, x='x', y='y', z='z', color='composer', hover_name='composer')
     for trace, composer in zip(fig.data, df['composer'].unique()):
         trace.marker.color = df[df['composer'] == composer]['color'].iloc[0]
 
-    fig.update_layout(title='3D t-SNE of Embeddings by Composer with Cluster-Based Colors')
+    fig.update_layout(title='3D t-SNE of Embeddings by Composer')
     fig.show()
+
+    # Plot centroids with marker size based on sample count
+    fig2 = go.Figure()
+
+    fig2.add_trace(go.Scatter3d(
+        x=centroids['x'],
+        y=centroids['y'],
+        z=centroids['z'],
+        mode='markers+text',
+        marker=dict(
+            size=centroids['sample_count'] / centroids['sample_count'].max() * 30 + 10,  # Scale size
+            color=[centroid_colors[composer] for composer in centroids.index],
+            opacity=0.8,
+        ),
+        text=centroids.index,
+        textposition='top center',
+        hovertext=centroids['sample_count'].apply(lambda x: f"Samples: {x}"),
+        hoverinfo="text"
+    ))
+
+    fig2.update_layout(
+        title='Centroids of Clusters',
+        scene=dict(
+            xaxis_title='x',
+            yaxis_title='y',
+            zaxis_title='z'
+        )
+    )
+    fig2.show()
 
 def plot_distance_histogram(embeddings, labels, num_pairs=1000):
     """
@@ -193,14 +225,14 @@ def plot_distance_histogram(embeddings, labels, num_pairs=1000):
                       yaxis_title='Density')
     fig.show()
 
-def plot_roc_curve(embeddings, labels):
+def plot_roc_curve(embeddings, labels, downsample_rate=10):
     """
-    Plot ROC curve using precomputed embeddings and labels, with threshold values displayed and
-    points colored by the mixed accuracy metric.
+    Plot ROC curve using precomputed embeddings and labels, with sparsity and optimized layout.
 
     Args:
         embeddings (np.ndarray): Precomputed embeddings.
         labels (np.ndarray): Composer labels.
+        downsample_rate (int): Factor to downsample the points for efficiency.
     """
     # Compute pairwise distances and labels
     pairwise_distances = squareform(pdist(embeddings, metric='euclidean'))
@@ -214,10 +246,16 @@ def plot_roc_curve(embeddings, labels):
     fpr, tpr, thresholds = roc_curve(labels, -distances)  # Negative distances because lower distances imply positive class
     roc_auc = auc(fpr, tpr)
 
-    # Calculate val_acc_similar, val_acc_dissimilar, and val_acc_mixed
+    # Downsample fpr, tpr, and val_acc_mixed
     val_acc_similar = tpr
     val_acc_dissimilar = 1 - fpr
     val_acc_mixed = 0.5 * (val_acc_similar + val_acc_dissimilar)
+
+    # Downsample for efficiency
+    fpr = fpr[::downsample_rate]
+    tpr = tpr[::downsample_rate]
+    val_acc_mixed = val_acc_mixed[::downsample_rate]
+    thresholds = thresholds[::downsample_rate]
 
     # Find index of the optimal threshold maximizing val_acc_mixed
     optimal_index = np.argmax(val_acc_mixed)
@@ -227,7 +265,7 @@ def plot_roc_curve(embeddings, labels):
 
     fig = go.Figure()
 
-    # Main ROC curve line
+    # Main ROC curve line with downsampled points
     fig.add_trace(go.Scatter(x=fpr, y=tpr, mode='lines',
                              name=f'ROC curve (area = {roc_auc:.2f})',
                              line=dict(color='darkorange', width=2)))
@@ -237,13 +275,13 @@ def plot_roc_curve(embeddings, labels):
                              name='Random Guess',
                              line=dict(color='navy', width=2, dash='dash')))
 
-    # Add scatter points colored by val_acc_mixed
+    # Add sparse scatter points colored by val_acc_mixed
     fig.add_trace(go.Scatter(
         x=fpr, y=tpr, mode='markers',
-        marker=dict(size=6, color=val_acc_mixed, colorscale='Viridis', colorbar=dict(title='val_acc_mixed')),
-        text=[f"Threshold: {-t:.3f}<br>val_acc_mixed: {m:.2f}" for t, m in zip(thresholds, val_acc_mixed)],
-        hoverinfo="text",
-        name='Threshold Points'
+        marker=dict(size=6, color=val_acc_mixed, colorscale='Viridis', 
+                    colorbar=dict(title='val_acc_mixed', x=1.1)),
+        hoverinfo="none",  # Disable hover to improve performance
+        name='Sparse Threshold Points'
     ))
 
     # Highlight the optimal point
@@ -251,7 +289,7 @@ def plot_roc_curve(embeddings, labels):
         x=[optimal_fpr], y=[optimal_tpr],
         mode='markers+text',
         marker=dict(size=10, color='red', symbol='x'),
-        text=[f"Optimal Threshold: {-optimal_threshold:.5f}<br>val_acc_mixed: {val_acc_mixed[optimal_index]:.2f}"],
+        text=[f"Optimal Threshold: {optimal_threshold:.2f}<br>val_acc_mixed: {val_acc_mixed[optimal_index]:.2f}"],
         textposition="top right",
         hoverinfo="text",
         name='Optimal Threshold'
@@ -263,7 +301,8 @@ def plot_roc_curve(embeddings, labels):
         xaxis_title='False Positive Rate (1 - val_acc_dissimilar)',
         yaxis_title='True Positive Rate (val_acc_similar)',
         xaxis=dict(range=[-0.01, 1.0]),
-        yaxis=dict(range=[0.0, 1.01])
+        yaxis=dict(range=[0.0, 1.01]),
+        legend=dict(x=0.8, y=0.2)
     )
 
     fig.show()
