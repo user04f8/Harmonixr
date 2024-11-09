@@ -1,4 +1,5 @@
 data
+synthetic_data
 __pycache__
 lightning_logs
 harmony/

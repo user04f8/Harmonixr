@@ -4,7 +4,7 @@ import random
 
 def generate_synthetic_data(data_dir, num_samples=1000, t=128, o=5, T=200):
     """
-    Generates synthetic MIDI data for testing.
+    Generates synthetic MIDI data with unique noise patterns for each composer.
     
     Args:
         data_dir (str): Directory to save the data.
@@ -21,24 +21,31 @@ def generate_synthetic_data(data_dir, num_samples=1000, t=128, o=5, T=200):
     x_data = []
     y_data = []
 
+    # Define unique noise patterns for each composer
+    noise_patterns = {
+        'Composer_A': lambda: torch.sin(torch.linspace(0, 10, T)).repeat(12, o, 1) / 10,
+        'Composer_B': lambda: torch.rand(12, o, T) * torch.linspace(0.5, 1.5, T).unsqueeze(0).unsqueeze(0),
+        'Composer_C': lambda: torch.zeros(12, o, T).uniform_(0, 0.2) + torch.eye(12, T).unsqueeze(1),
+    }
+
     for i in range(num_samples):
         # Randomly assign a composer and title
         composer = random.choice(composers)
-
-        var = {'Composer_A': 1, 'Composer_B': 2, 'Composer_C': 3}[composer]
-
-        # Create a random tensor of shape (12, o, T) for each sample
-        midi_data = var * torch.rand(12, o, T)
-        x_data.append(midi_data)
         
-        title = titles[i]
-        y_data.append({'composer': composer, 'title': title})
+        # Generate unique noise based on the composer
+        base_noise = noise_patterns[composer]()
+        random_noise = torch.rand(12, o, T) / 100  # Add minor random noise
+        midi_data = base_noise + random_noise
 
-    # Save the data
+        x_data.append(midi_data)
+        y_data.append({'composer': composer, 'title': titles[i]})
+
+    # Split into training and validation sets
     train_split = int(0.8 * num_samples)  # 80% training, 20% validation
     x_train, x_val = x_data[:train_split], x_data[train_split:]
     y_train, y_val = y_data[:train_split], y_data[train_split:]
     
+    # Save the data
     torch.save(x_train, os.path.join(data_dir, 'x_train.pt'))
     torch.save(x_val, os.path.join(data_dir, 'x_val.pt'))
     torch.save(y_train, os.path.join(data_dir, 'y_train.pt'))
