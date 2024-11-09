@@ -178,17 +178,49 @@ class MIDIClassifier(pl.LightningModule):
         self.log('train_loss', loss, on_step=True, on_epoch=True, prog_bar=True)
         return loss
 
-    def validation_step(self, batch, batch_idx):
+    def val_dataloader(self):
+        val_dataset_similar = MIDIDataset(
+            self.hparams.data_dir, self.hparams.t, split='val', pair_type='similar'
+        )
+        val_dataset_dissimilar = MIDIDataset(
+            self.hparams.data_dir, self.hparams.t, split='val', pair_type='dissimilar'
+        )
+        val_dataset_mixed = MIDIDataset(
+            self.hparams.data_dir, self.hparams.t, split='val', pair_type='mixed'
+        )
+        val_loader_similar = DataLoader(
+            val_dataset_similar, batch_size=self.hparams.batch_size, num_workers=0
+        )
+        val_loader_dissimilar = DataLoader(
+            val_dataset_dissimilar, batch_size=self.hparams.batch_size, num_workers=0
+        )
+        val_loader_mixed = DataLoader(
+            val_dataset_mixed, batch_size=self.hparams.batch_size, num_workers=0
+        )
+        return [val_loader_similar, val_loader_dissimilar, val_loader_mixed]
+
+    def validation_step(self, batch, batch_idx, dataloader_idx=0):
         (x1, x2), y = batch
         distance, emb1, emb2 = self.forward(x1, x2)
         y = y.float()
         loss = self.criterion(emb1, emb2, y)
         preds = (distance < self.hparams.threshold).long()
         acc = (preds == y.long()).float().mean()
-        self.log('val_loss', loss, on_step=False, on_epoch=True, prog_bar=True)
-        self.log('val_acc', acc, on_step=False, on_epoch=True, prog_bar=True)
-        return {'val_loss': loss, 'val_acc': acc}
 
+        if dataloader_idx == 0:
+            # Similar pairs
+            self.log('val_loss_similar', loss, on_step=False, on_epoch=True, prog_bar=True)
+            self.log('val_acc_similar', acc, on_step=False, on_epoch=True, prog_bar=True)
+        elif dataloader_idx == 1:
+            # Dissimilar pairs
+            self.log('val_loss_dissimilar', loss, on_step=False, on_epoch=True, prog_bar=True)
+            self.log('val_acc_dissimilar', acc, on_step=False, on_epoch=True, prog_bar=True)
+        else:
+            # Mixed pairs
+            self.log('val_loss_mixed', loss, on_step=False, on_epoch=True, prog_bar=True)
+            self.log('val_acc_mixed', acc, on_step=False, on_epoch=True, prog_bar=True)
+
+        return {'val_loss': loss, 'val_acc': acc}
     def configure_optimizers(self):
         optimizer = torch.optim.AdamW(
             self.parameters(),

@@ -1,4 +1,3 @@
-# data.py
 import torch
 from torch.utils.data import Dataset
 import os
@@ -8,15 +7,15 @@ from sklearn.model_selection import train_test_split
 from itertools import combinations
 
 class MIDIDataset(Dataset):
-    def __init__(self, data_dir, t, split='train', test_size=0.2, random_state=42):
+    def __init__(self, data_dir, t, split='train', test_size=0.2, random_state=42, pair_type='mixed'):
         self.t = t
         self.data_dir = data_dir
         self.split = split
+        self.pair_type = pair_type
 
         # Load data
         with warnings.catch_warnings():
             warnings.simplefilter("ignore", category=FutureWarning)
-            # Load the data
             self.x = torch.load(os.path.join(data_dir, 'midi_pieces.pt'))
             self.y = torch.load(os.path.join(data_dir, 'composer_vector.pt'))
 
@@ -51,7 +50,7 @@ class MIDIDataset(Dataset):
         # Build index by composer
         self.composer_indices = {}
         for idx, label in enumerate(self.y):
-            composer = label  # Assuming label is composer ID
+            composer = label
             if composer not in self.composer_indices:
                 self.composer_indices[composer] = []
             self.composer_indices[composer].append(idx)
@@ -66,34 +65,57 @@ class MIDIDataset(Dataset):
         random.seed(random_state)  # Set seed for reproducibility
         pairs = []
         pair_labels = []
-        MAX_SIMILAR_PAIRS_PER_COMPOSER = 5
-        MAX_DISSIMILAR_PAIRS = 5 * len(self.y)  # NOTE TODO test or separate metrics
+        MAX_PAIRS = 500  # Adjust as needed for smaller validation sets
 
-        # Similar pairs
-        for composer, idxs in self.composer_indices.items():
-            if len(idxs) < 2:
-                continue
-            # Generate all combinations of similar pairs
-            similar_pairs = list(combinations(idxs, 2))
+        if self.pair_type == 'similar':
+            # Generate similar pairs
+            for composer, idxs in self.composer_indices.items():
+                if len(idxs) < 2:
+                    continue
+                similar_pairs = list(combinations(idxs, 2))
+                random.shuffle(similar_pairs)
+                selected_pairs = similar_pairs[:MAX_PAIRS]
+                for idx1, idx2 in selected_pairs:
+                    pairs.append((idx1, idx2))
+                    pair_labels.append(1)
+        elif self.pair_type == 'dissimilar':
+            # Generate dissimilar pairs
+            composers = list(self.composer_indices.keys())
+            composer_pairs = list(combinations(composers, 2))
+            random.shuffle(composer_pairs)
+            selected_composer_pairs = composer_pairs[:MAX_PAIRS]
+            for c1, c2 in selected_composer_pairs:
+                idx1 = random.choice(self.composer_indices[c1])
+                idx2 = random.choice(self.composer_indices[c2])
+                pairs.append((idx1, idx2))
+                pair_labels.append(0)
+        else:  # 'mixed'
+            # Generate a mix of similar and dissimilar pairs
+            num_pairs_each = MAX_PAIRS // 2
+
+            # Similar pairs
+            similar_pairs = []
+            for composer, idxs in self.composer_indices.items():
+                if len(idxs) < 2:
+                    continue
+                spairs = list(combinations(idxs, 2))
+                similar_pairs.extend(spairs)
             random.shuffle(similar_pairs)
-            # Select up to MAX_SIMILAR_PAIRS_PER_COMPOSER pairs
-            selected_pairs = similar_pairs[:MAX_SIMILAR_PAIRS_PER_COMPOSER]
-            for idx1, idx2 in selected_pairs:
+            selected_similar_pairs = similar_pairs[:num_pairs_each]
+            for idx1, idx2 in selected_similar_pairs:
                 pairs.append((idx1, idx2))
                 pair_labels.append(1)
 
-        # Dissimilar pairs
-        dissimilar_pairs = []
-        composers = list(self.composer_indices.keys())
-        composer_pairs = list(combinations(composers, 2))
-        random.shuffle(composer_pairs)
-        # Select up to MAX_DISSIMILAR_PAIRS composer pairs
-        selected_composer_pairs = composer_pairs[:MAX_DISSIMILAR_PAIRS]
-        for c1, c2 in selected_composer_pairs:
-            idx1 = random.choice(self.composer_indices[c1])
-            idx2 = random.choice(self.composer_indices[c2])
-            pairs.append((idx1, idx2))
-            pair_labels.append(0)
+            # Dissimilar pairs
+            composers = list(self.composer_indices.keys())
+            composer_pairs = list(combinations(composers, 2))
+            random.shuffle(composer_pairs)
+            selected_composer_pairs = composer_pairs[:num_pairs_each]
+            for c1, c2 in selected_composer_pairs:
+                idx1 = random.choice(self.composer_indices[c1])
+                idx2 = random.choice(self.composer_indices[c2])
+                pairs.append((idx1, idx2))
+                pair_labels.append(0)
 
         return pairs, pair_labels
 

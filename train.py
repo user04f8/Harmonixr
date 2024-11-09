@@ -67,10 +67,10 @@ if __name__ == '__main__':
     )
 
     checkpoint_callback = ModelCheckpoint(
-        monitor='val_acc',
-        dirpath='checkpoints/',
-        filename='BIG-MIDIClassifier-{epoch:02d}-{val_acc:.2f}',
-        save_top_k=1,
+        monitor='val_acc_mixed',  # Monitor the combined validation accuracy
+        filename='{epoch:02d}-{val_acc_mixed:.2f}',
+        save_top_k=3,
+        save_last=True,
         mode='max',
     )
 
@@ -84,6 +84,6 @@ if __name__ == '__main__':
         gradient_clip_val=1.0,
         enable_progress_bar=True
     )
-
+    
     # Train the model
     trainer.fit(model)
