@@ -1,1 +1,2 @@
 archive/epoch=52-val_acc_mixed=0.62.ckpt filter=lfs diff=lfs merge=lfs -text
+tb_logs/BIG-MIDIClassifier/version_15/checkpoints/last.ckpt filter=lfs diff=lfs merge=lfs -text
