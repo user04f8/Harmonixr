@@ -4,6 +4,7 @@ import os
 import random
 import warnings
 from sklearn.model_selection import train_test_split
+from itertools import combinations
 
 class MIDIDataset(Dataset):
     def __init__(self, data_dir, t, split='train', test_size=0.2, random_state=42):
@@ -19,19 +20,16 @@ class MIDIDataset(Dataset):
             self.y = torch.load(os.path.join(data_dir, 'composer_vector.pt'))
 
         # Convert data from uint8 to float and normalize
-        # Assuming self.x is a list or tensor of shape [num_samples, 12, 6, T]
         if isinstance(self.x, torch.Tensor):
-            # If self.x is a tensor, we need to split it into a list of samples
             num_samples = self.x.shape[0]
             self.x = [self.x[i].float() / 255.0 for i in range(num_samples)]
         elif isinstance(self.x, list):
-            # If self.x is a list, convert each sample
             self.x = [sample.float() / 255.0 for sample in self.x]
         else:
             raise TypeError("Unsupported data type for self.x")
 
         # Ensure labels are integers
-        self.y = [int(label) for label in self.y]
+        self.y = [int(label.item()) for label in self.y]
 
         # Perform train/val split
         x_train, x_val, y_train, y_val = train_test_split(
@@ -41,9 +39,11 @@ class MIDIDataset(Dataset):
         if self.split == 'train':
             self.x = x_train
             self.y = y_train
+            self.is_train = True
         elif self.split == 'val':
             self.x = x_val
             self.y = y_val
+            self.is_train = False
         else:
             raise ValueError(f"Unknown split: {self.split}")
 
@@ -57,30 +57,61 @@ class MIDIDataset(Dataset):
 
         self.indices = list(range(len(self.x)))
 
+        if not self.is_train:
+            # Pre-generate pairs for validation
+            self.pairs, self.pair_labels = self._generate_validation_pairs()
+
+    def _generate_validation_pairs(self):
+        pairs = []
+        pair_labels = []
+        # Similar pairs
+        for composer, idxs in self.composer_indices.items():
+            if len(idxs) < 2:
+                continue
+            for idx1, idx2 in combinations(idxs, 2):
+                pairs.append((idx1, idx2))
+                pair_labels.append(1)
+        # Dissimilar pairs
+        composers = list(self.composer_indices.keys())
+        for i in range(len(composers)):
+            for j in range(i + 1, len(composers)):
+                idx1 = random.choice(self.composer_indices[composers[i]])
+                idx2 = random.choice(self.composer_indices[composers[j]])
+                pairs.append((idx1, idx2))
+                pair_labels.append(0)
+        return pairs, pair_labels
+
     def __len__(self):
-        return len(self.indices)
+        if self.is_train:
+            return len(self.indices)
+        else:
+            return len(self.pairs)
 
     def __getitem__(self, idx):
-        x1 = self.x[idx]
-        y1 = self.y[idx]  # Assuming y1 is composer ID
-
-        # Get a random pair
-        if random.random() < 0.5:
-            # Same composer
-            same = 1
-            idx2 = random.choice(self.composer_indices[y1])
-            # Ensure idx2 is not the same as idx
-            while idx2 == idx and len(self.composer_indices[y1]) > 1:
+        if self.is_train:
+            x1 = self.x[idx]
+            y1 = self.y[idx]
+            # Randomly decide whether to create a similar or dissimilar pair
+            if random.random() < 0.5 and len(self.composer_indices[y1]) > 1:
+                # Similar pair
+                same = 1
                 idx2 = random.choice(self.composer_indices[y1])
-        else:
-            # Different composer
-            same = 0
-            different_composers = list(self.composer_indices.keys())
-            different_composers.remove(y1)
-            y2 = random.choice(different_composers)
-            idx2 = random.choice(self.composer_indices[y2])
+                while idx2 == idx:
+                    idx2 = random.choice(self.composer_indices[y1])
+            else:
+                # Dissimilar pair
+                same = 0
+                different_composers = list(self.composer_indices.keys())
+                different_composers.remove(y1)
+                y2 = random.choice(different_composers)
+                idx2 = random.choice(self.composer_indices[y2])
 
-        x2 = self.x[idx2]
+            x2 = self.x[idx2]
+        else:
+            idx1, idx2 = self.pairs[idx]
+            same = self.pair_labels[idx]
+            x1 = self.x[idx1]
+            x2 = self.x[idx2]
 
         # Subsample or pad
         x1 = self._process_sample(x1)
@@ -98,4 +129,12 @@ class MIDIDataset(Dataset):
             pad_size = self.t - T
             pad = torch.zeros((C, O, pad_size))
             sample = torch.cat([sample, pad], dim=2)
+            # TODO: figure out proper center padding?
+            # pad_left = pad_size // 2
+            # pad_right = pad_size - pad_left
+            # pad = torch.zeros((C, O, pad_left))
+            # sample = torch.cat([pad, sample, pad], dim=2)
+            # if pad_right > 0:
+            #     pad = torch.zeros((C, O, pad_right))
+            #     sample = torch.cat([sample, pad], dim=2)
         return sample

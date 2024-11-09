@@ -195,19 +195,31 @@ class MIDIClassifier(pl.LightningModule):
             lr=self.hparams.lr,
             weight_decay=self.hparams.weight_decay
         )
+        # Total number of training steps
+        num_training_steps = self.trainer.estimated_stepping_batches
+        # Number of warmup steps
+        num_warmup_steps = int(0.1 * num_training_steps)  # 10% of total steps
+        # Define the lambda function for linear warmup
+        def lr_lambda(current_step):
+            if current_step < num_warmup_steps:
+                return float(current_step) / float(max(1, num_warmup_steps))
+            return max(
+                0.0, float(num_training_steps - current_step) / float(max(1, num_training_steps - num_warmup_steps))
+            )
         scheduler = {
-            'scheduler': ReduceLROnPlateau(optimizer, mode='max', patience=3),
-            'monitor': 'val_acc'
+            'scheduler': torch.optim.lr_scheduler.LambdaLR(optimizer, lr_lambda),
+            'interval': 'step',
+            'frequency': 1
         }
         return [optimizer], [scheduler]
 
     def train_dataloader(self):
         train_dataset = MIDIDataset(self.hparams.data_dir, self.hparams.t, split='train')
-        return DataLoader(train_dataset, batch_size=self.hparams.batch_size, shuffle=True, num_workers=0)
+        return DataLoader(train_dataset, batch_size=self.hparams.batch_size, shuffle=True, num_workers=23)
 
     def val_dataloader(self):
         val_dataset = MIDIDataset(self.hparams.data_dir, self.hparams.t, split='val')
-        return DataLoader(val_dataset, batch_size=self.hparams.batch_size, num_workers=0)
+        return DataLoader(val_dataset, batch_size=self.hparams.batch_size, num_workers=23)
 
 class ContrastiveLoss(nn.Module):
     def __init__(self, margin=1.0):
