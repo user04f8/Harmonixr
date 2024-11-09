@@ -1,0 +1,7 @@
+pytorch_lightning
+torch
+torchvision
+numpy
+einops
+tensorboard
+tensorboardX
