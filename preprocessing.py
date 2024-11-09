@@ -116,7 +116,7 @@ def save_tensor(piece_arrays, composer_vector, tensor_path="midi_pieces.pt", com
     print(f"Composer vector saved to {composer_vector_path}")
 
 # Usage example
-folder_path = 'GiantMIDI-PIano/surname_checked_midis_v1.2/surname_checked_midis' # Replace with the path to your MIDI files
+folder_path = 'surname_checked_midis'
 time_resolution_ms = 50  # Define the time grid in milliseconds
 
 # Process the folder and save the tensor and composer vector
