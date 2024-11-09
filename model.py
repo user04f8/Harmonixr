@@ -186,13 +186,14 @@ class MIDIClassifier(pl.LightningModule):
         x = self.fc(x)
         x = nn.functional.normalize(x, p=2, dim=1)  # Euclidean normalization NOTE lose one degree of freedom in exchange for more stability?
         return x
+    
+    def compute_distance(self, emb1, emb2):
+        return torch.norm(emb1 - emb2, p=2, dim=1)
 
     def forward(self, x1, x2):
         emb1 = self.forward_one(x1)
         emb2 = self.forward_one(x2)
-        # Euclidean distance
-        distance = torch.norm(emb1 - emb2, p=2, dim=1)
-        return distance, emb1, emb2
+        return self.compute_distance(emb1, emb2)
     
     def train_dataloader(self):
         train_dataset = MIDIDataset(self.hparams.data_dir, self.hparams.t, split='train')
@@ -200,9 +201,9 @@ class MIDIClassifier(pl.LightningModule):
 
     def training_step(self, batch, batch_idx):
         (x1, x2), y = batch
-        distance, emb1, emb2 = self.forward(x1, x2)
+        distance = self.forward(x1, x2)
         y = y.float()
-        loss = self.criterion(emb1, emb2, y)
+        loss = self.criterion(distance, y)
         self.log('train_loss', loss, on_step=True, on_epoch=True, prog_bar=True)
         return loss
 
@@ -229,9 +230,9 @@ class MIDIClassifier(pl.LightningModule):
 
     def validation_step(self, batch, batch_idx, dataloader_idx=0):
         (x1, x2), y = batch
-        distance, emb1, emb2 = self.forward(x1, x2)
+        distance = self.forward(x1, x2)
         y = y.float()
-        loss = self.criterion(emb1, emb2, y)
+        loss = self.criterion(distance, y)
         preds = (distance < self.hparams.threshold).long()
         acc = (preds == y.long()).float().mean()
 
@@ -285,10 +286,8 @@ class ContrastiveLoss(nn.Module):
         super(ContrastiveLoss, self).__init__()
         self.margin = margin
 
-    def forward(self, emb1, emb2, label):
-        # Compute Euclidean distance
-        distance = torch.norm(emb1 - emb2, p=2, dim=1)
-        # Contrastive loss calculation
-        loss = (label) * 0.5 * distance.pow(2) + \
-               (1 - label) * 0.5 * torch.clamp(self.margin - distance, min=0.0).pow(2)
-        return loss.mean()
+    def forward(self, distance, label):
+        return (
+            (label) * 0.5 * distance.pow(2) + \
+            (1 - label) * 0.5 * torch.clamp(self.margin - distance, min=0.0).pow(2)
+        ).mean()
