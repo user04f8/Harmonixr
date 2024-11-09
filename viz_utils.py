@@ -5,6 +5,8 @@ from torch.utils.data import Dataset, DataLoader
 from sklearn.manifold import TSNE
 import plotly.express as px
 import plotly.graph_objects as go
+import matplotlib.cm as cm
+import matplotlib.colors as mcolors
 from sklearn.metrics import roc_curve, auc
 from scipy.spatial.distance import pdist, squareform
 from tqdm import tqdm
@@ -113,6 +115,7 @@ def visualize_tsne(embeddings, composer_names):
     tsne = TSNE(n_components=3, perplexity=30, random_state=42)
     embeddings_tsne = tsne.fit_transform(embeddings)
 
+    # Create a DataFrame to store t-SNE results with composer names
     df = pd.DataFrame({
         'x': embeddings_tsne[:, 0],
         'y': embeddings_tsne[:, 1],
@@ -120,8 +123,20 @@ def visualize_tsne(embeddings, composer_names):
         'composer': composer_names
     })
 
+    # Calculate a color mapping based on x + y + z
+    df['color_value'] = df['x'] + df['y'] + df['z']
+    norm = mcolors.Normalize(vmin=df['color_value'].min(), vmax=df['color_value'].max())
+    cmap = cm.get_cmap('plasma')  # You can change to another colormap like 'viridis' or 'cividis'
+
+    # Map the normalized color values to the colormap
+    df['color'] = df['color_value'].apply(lambda val: mcolors.rgb2hex(cmap(norm(val))))
+
+    # Create the 3D scatter plot with the colormap-based colors
     fig = px.scatter_3d(df, x='x', y='y', z='z', color='composer', hover_name='composer')
-    fig.update_layout(title='3D t-SNE of Embeddings by Composer')
+    for trace, composer in zip(fig.data, df['composer'].unique()):
+        trace.marker.color = df[df['composer'] == composer]['color'].tolist()
+
+    fig.update_layout(title='3D t-SNE of Embeddings by Composer with Colorful Colormap')
     fig.show()
 
 def plot_distance_histogram(embeddings, labels, num_pairs=1000):
