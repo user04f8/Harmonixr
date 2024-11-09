@@ -209,18 +209,19 @@ class MIDIClassifier(pl.LightningModule):
 
         if dataloader_idx == 0:
             # Similar pairs
-            self.log('val_loss_similar', loss, on_step=False, on_epoch=True, prog_bar=True)
-            self.log('val_acc_similar', acc, on_step=False, on_epoch=True, prog_bar=True)
+            self.log('val_loss_similar', loss, on_step=False, on_epoch=True, prog_bar=True, add_dataloader_idx=False)
+            self.log('val_acc_similar', acc, on_step=False, on_epoch=True, prog_bar=True, add_dataloader_idx=False)
         elif dataloader_idx == 1:
             # Dissimilar pairs
-            self.log('val_loss_dissimilar', loss, on_step=False, on_epoch=True, prog_bar=True)
-            self.log('val_acc_dissimilar', acc, on_step=False, on_epoch=True, prog_bar=True)
+            self.log('val_loss_dissimilar', loss, on_step=False, on_epoch=True, prog_bar=True, add_dataloader_idx=False)
+            self.log('val_acc_dissimilar', acc, on_step=False, on_epoch=True, prog_bar=True, add_dataloader_idx=False)
         else:
             # Mixed pairs
-            self.log('val_loss_mixed', loss, on_step=False, on_epoch=True, prog_bar=True)
-            self.log('val_acc_mixed', acc, on_step=False, on_epoch=True, prog_bar=True)
+            self.log('val_loss_mixed', loss, on_step=False, on_epoch=True, prog_bar=True, add_dataloader_idx=False)
+            self.log('val_acc_mixed', acc, on_step=False, on_epoch=True, prog_bar=True, add_dataloader_idx=False)
 
         return {'val_loss': loss, 'val_acc': acc}
+    
     def configure_optimizers(self):
         optimizer = torch.optim.AdamW(
             self.parameters(),
@@ -249,9 +250,9 @@ class MIDIClassifier(pl.LightningModule):
         train_dataset = MIDIDataset(self.hparams.data_dir, self.hparams.t, split='train')
         return DataLoader(train_dataset, batch_size=self.hparams.batch_size, shuffle=True, num_workers=0)
 
-    def val_dataloader(self):
-        val_dataset = MIDIDataset(self.hparams.data_dir, self.hparams.t, split='val')
-        return DataLoader(val_dataset, batch_size=self.hparams.batch_size, num_workers=0)
+    # def val_dataloader(self):
+    #     val_dataset = MIDIDataset(self.hparams.data_dir, self.hparams.t, split='val')
+    #     return DataLoader(val_dataset, batch_size=self.hparams.batch_size, num_workers=0)
 
 class ContrastiveLoss(nn.Module):
     def __init__(self, margin=1.0):

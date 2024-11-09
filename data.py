@@ -1,10 +1,11 @@
 import torch
-from torch.utils.data import Dataset
+from torch.utils.data import Dataset, DataLoader
 import os
 import random
 import warnings
 from sklearn.model_selection import train_test_split
 from itertools import combinations
+import pytorch_lightning as pl
 
 class MIDIDataset(Dataset):
     def __init__(self, data_dir, t, split='train', test_size=0.2, random_state=42, pair_type='mixed'):
@@ -181,3 +182,109 @@ class MIDIDataset(Dataset):
             pad_right_tensor = torch.zeros((C, O, pad_right))
             sample = torch.cat([pad_left_tensor, sample, pad_right_tensor], dim=2)
         return sample
+
+class MIDIDataModule(pl.LightningDataModule):
+    def __init__(self, data_dir, t, batch_size, num_workers=0, test_size=0.2, random_state=42, max_pairs=500):
+        super().__init__()
+        self.data_dir = data_dir
+        self.t = t
+        self.batch_size = batch_size
+        self.num_workers = num_workers
+        self.test_size = test_size
+        self.random_state = random_state
+        self.max_pairs = max_pairs
+
+    def prepare_data(self):
+        # Load data once
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", category=FutureWarning)
+            self.x = torch.load(os.path.join(self.data_dir, 'midi_pieces.pt'))
+            self.y = torch.load(os.path.join(self.data_dir, 'composer_vector.pt'))
+
+    def setup(self, stage=None):
+        # Convert data from uint8 to float and normalize
+        if isinstance(self.x, torch.Tensor):
+            num_samples = self.x.shape[0]
+            self.x = [self.x[i].float() / 255.0 for i in range(num_samples)]
+        elif isinstance(self.x, list):
+            self.x = [sample.float() / 255.0 for sample in self.x]
+        else:
+            raise TypeError("Unsupported data type for self.x")
+
+        # Ensure labels are integers
+        self.y = [int(label.item()) for label in self.y]
+
+        # Perform train/val split
+        x_train, x_val, y_train, y_val = train_test_split(
+            self.x, self.y, test_size=self.test_size, random_state=self.random_state
+        )
+
+        # Create datasets
+        self.train_dataset = MIDIDataset(
+            data_dir=self.data_dir,
+            t=self.t,
+            split='train',
+            test_size=self.test_size,
+            random_state=self.random_state,
+            x_data=x_train,
+            y_data=y_train,
+            is_train=True,
+            max_pairs=self.max_pairs
+        )
+
+        # Validation datasets with different pair types
+        self.val_dataset_similar = MIDIDataset(
+            data_dir=self.data_dir,
+            t=self.t,
+            split='val',
+            test_size=self.test_size,
+            random_state=self.random_state,
+            x_data=x_val,
+            y_data=y_val,
+            is_train=False,
+            pair_type='similar',
+            max_pairs=self.max_pairs
+        )
+
+        self.val_dataset_dissimilar = MIDIDataset(
+            data_dir=self.data_dir,
+            t=self.t,
+            split='val',
+            test_size=self.test_size,
+            random_state=self.random_state,
+            x_data=x_val,
+            y_data=y_val,
+            is_train=False,
+            pair_type='dissimilar',
+            max_pairs=self.max_pairs
+        )
+
+        self.val_dataset_mixed = MIDIDataset(
+            data_dir=self.data_dir,
+            t=self.t,
+            split='val',
+            test_size=self.test_size,
+            random_state=self.random_state,
+            x_data=x_val,
+            y_data=y_val,
+            is_train=False,
+            pair_type='mixed',
+            max_pairs=self.max_pairs
+        )
+
+    def train_dataloader(self):
+        return DataLoader(
+            self.train_dataset, batch_size=self.batch_size, shuffle=True, num_workers=self.num_workers
+        )
+
+    def val_dataloader(self):
+        val_loader_similar = DataLoader(
+            self.val_dataset_similar, batch_size=self.batch_size, num_workers=self.num_workers
+        )
+        val_loader_dissimilar = DataLoader(
+            self.val_dataset_dissimilar, batch_size=self.batch_size, num_workers=self.num_workers
+        )
+        val_loader_mixed = DataLoader(
+            self.val_dataset_mixed, batch_size=self.batch_size, num_workers=self.num_workers
+        )
+        return [val_loader_similar, val_loader_dissimilar, val_loader_mixed]

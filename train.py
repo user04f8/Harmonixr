@@ -13,7 +13,7 @@ if __name__ == '__main__':
         't': 20 * 60 * 4,
         'o': 6, 
         'batch_size': 26,
-        'lr': 1e-6,
+        'lr': 5e-6,
         'threshold': 0.5,
         'num_conv_layers': 4,
         'conv_channels': [32, 64, 128, 256],
@@ -84,6 +84,6 @@ if __name__ == '__main__':
         gradient_clip_val=1.0,
         enable_progress_bar=True
     )
-    
+
     # Train the model
     trainer.fit(model)
