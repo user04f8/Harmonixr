@@ -16,7 +16,7 @@ if __name__ == '__main__':
         'o': 6, 
         'batch_size': 4 * 26,
         'lr': 1e-5,
-        'threshold': 1.0,
+        'threshold': 0.5,
         'num_conv_layers': 4,
         'conv_channels': [32, 64, 128, 256],
         'conv_kernel_sizes': [(5,3,5), (5,3,5), (3,3,3), (3,3,3)],
