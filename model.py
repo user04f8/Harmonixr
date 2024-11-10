@@ -236,6 +236,8 @@ class SiaViT(pl.LightningModule):
         return [threshold_optim_dataloader_mixed, val_loader_mixed, val_loader_similar, val_loader_dissimilar]
 
     def validation_step(self, batch, batch_idx, dataloader_idx=0):
+        print(self.optimizer)
+
         (x1, x2), y = batch
         distance = self.forward(x1, x2)
         y = y.float()
@@ -303,7 +305,7 @@ class SiaViT(pl.LightningModule):
 
         warmup_scheduler = {
             'scheduler': torch.optim.lr_scheduler.LinearLR(
-                optimizer, start_factor=1e-6, end_factor=1.0, total_iters=warmup_steps
+                optimizer, start_factor=1e-6, end_factor=1.0, total_iters=warmup_steps, verbose=True
             ),
             'interval': 'step',
             'frequency': 1
@@ -324,7 +326,7 @@ class SiaViT(pl.LightningModule):
 
         annealing_scheduler = {
             'scheduler': torch.optim.lr_scheduler.LinearLR(
-                optimizer, start_factor=1.0, end_factor=0.0, total_iters=anneal_steps
+                optimizer, start_factor=1.0, end_factor=0.0, total_iters=anneal_steps, verbose=True
             ),
             'interval': 'step',
             'frequency': 1
