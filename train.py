@@ -22,7 +22,7 @@ if __name__ == '__main__':
         conv_channels=[16, 32, 64],
         conv_kernel_sizes=[(5, 5, 5), (3, 3, 3), (3, 3, 3)],
         conv_strides=[(2, 2, 2), (1, 1, 2), (1, 1, 2)],
-        conv_paddings=[(1, 1, 2), (1, 1, 1), (1, 1, 1)],
+        conv_paddings=[(2, 2, 2), (1, 1, 1), (1, 1, 1)],
         dropout_rates=[0.5, 0.5, 0.4],
         maxpool_kernel_sizes=[(2, 1, 2), (2, 1, 2), (2, 1, 2)],
         transformer_d_model=256,
