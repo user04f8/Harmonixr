@@ -42,7 +42,7 @@ if __name__ == '__main__':
 
     checkpoint_callback = ModelCheckpoint(
         monitor='val_loss_mixed',
-        filename='{epoch:02d}-{val_loss_mixed:.2f}',
+        filename='{epoch:02d}-{val_loss_mixed:.5f}',
         save_top_k=3,
         save_last=True,
         mode='min',
