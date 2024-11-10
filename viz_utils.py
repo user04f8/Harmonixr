@@ -196,7 +196,7 @@ def plot_distance_histogram(embeddings, labels, num_pairs=1000):
     """
     distances = []
     pair_labels = []
-    MAX_DIST = 0.2
+    MAX_DIST = 0.1
 
     # Build composer indices
     composer_indices = {}
