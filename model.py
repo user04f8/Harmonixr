@@ -5,42 +5,37 @@ import pytorch_lightning as pl
 from torch.utils.data import DataLoader
 from einops import rearrange
 from data import MIDIDataset
-from pytorch_lightning.callbacks import LearningRateMonitor
 
-def get_cosine_schedule_with_warmup(
-    optimizer, 
-    num_warmup_steps, 
-    num_training_steps, 
-    eta_min=0, 
-    last_epoch=-1
-):
+NUM_WORKERS_PER_DATALOADER = 0
+
+
+def get_cosine_schedule_with_warmup(optimizer, num_warmup_steps, num_training_steps, eta_min=0, last_epoch=-1):
     """
-    Create a schedule with a learning rate that increases linearly from 0 to 1
-    during the warmup phase and then decreases to `eta_min` following a cosine curve.
+    Create a learning rate scheduler with a warmup phase followed by a cosine decay.
 
     Args:
-        optimizer (Optimizer): Optimizer to apply the schedule to.
-        num_warmup_steps (int): Number of steps for the warmup phase.
+        optimizer (Optimizer): Wrapped optimizer.
+        num_warmup_steps (int): Number of warmup steps.
         num_training_steps (int): Total number of training steps.
-        eta_min (float, optional): The minimum learning rate. Default: 0.
-        last_epoch (int, optional): The index of the last epoch. Default: -1.
+        eta_min (float): Minimum learning rate after decay.
+        last_epoch (int): The index of the last epoch.
 
     Returns:
-        LambdaLR: PyTorch LambdaLR scheduler.
+        LambdaLR: Learning rate scheduler.
     """
     def lr_lambda(current_step):
         if current_step < num_warmup_steps:
             return float(current_step) / float(max(1, num_warmup_steps))
         progress = float(current_step - num_warmup_steps) / float(max(1, num_training_steps - num_warmup_steps))
-        return max(
-            0.0, 
-            0.5 * (1.0 + math.cos(math.pi * progress))
-        )
-    
+        return max(eta_min, 0.5 * (1.0 + math.cos(math.pi * progress)))
+
     return torch.optim.lr_scheduler.LambdaLR(optimizer, lr_lambda, last_epoch)
 
 
 class WraparoundConv3D(nn.Module):
+    """
+    A 3D convolutional layer that supports wraparound padding on the pitch dimension.
+    """
     def __init__(self, in_channels, out_channels, kernel_size, stride=1, padding=0, use_wraparound=False):
         super(WraparoundConv3D, self).__init__()
         self.use_wraparound = use_wraparound
@@ -60,6 +55,9 @@ class WraparoundConv3D(nn.Module):
 
 
 class ResidualConv3D(nn.Module):
+    """
+    A conv layer with residual "skip" connections
+    """
     def __init__(self, in_channels, out_channels, kernel_size, stride=1, padding=0, use_wraparound=False):
         super(ResidualConv3D, self).__init__()
         self.use_wraparound = use_wraparound
@@ -71,39 +69,24 @@ class ResidualConv3D(nn.Module):
             use_wraparound=use_wraparound
         )
         self.bn1 = nn.BatchNorm3d(out_channels)
-        self.relu = nn.ReLU()
-        self.conv2 = WraparoundConv3D(
-            out_channels, out_channels, kernel_size,
-            stride=1, padding=padding,
-            use_wraparound=use_wraparound
-        )
+        self.relu = nn.ReLU(inplace=True)
+        self.conv2 = nn.Conv3d(out_channels, out_channels, kernel_size, stride=1, padding=padding)
         self.bn2 = nn.BatchNorm3d(out_channels)
 
         # Residual Path
-        if in_channels != out_channels or stride != 1:
-            if self.use_wraparound:
-                self.residual = nn.Sequential(
-                    WraparoundConv3D(
-                        in_channels, out_channels, kernel_size=1,
-                        stride=stride, padding=0,
-                        use_wraparound=True  # Apply wraparound in residual
-                    ),
-                    nn.BatchNorm3d(out_channels)
-                )
-            else:
-                self.residual = nn.Sequential(
-                    nn.Conv3d(in_channels, out_channels, kernel_size=1, stride=stride, padding=0),
-                    nn.BatchNorm3d(out_channels)
-                )
+        if in_channels != out_channels or stride != 1 or self.use_wraparound:
+            self.downsample = nn.Sequential(
+                WraparoundConv3D(
+                    in_channels, out_channels, kernel_size=1,
+                    stride=stride, padding=0, use_wraparound=self.use_wraparound
+                ),
+                nn.BatchNorm3d(out_channels)
+            )
         else:
-            self.residual = nn.Identity()
-
-        # Initialize weights
-        nn.init.kaiming_normal_(self.conv1.conv.weight, mode='fan_out', nonlinearity='relu')
-        nn.init.kaiming_normal_(self.conv2.conv.weight, mode='fan_out', nonlinearity='relu')
+            self.downsample = None
 
     def forward(self, x):
-        identity = self.residual(x)
+        identity = x
 
         out = self.conv1(x)
         out = self.bn1(out)
@@ -112,6 +95,9 @@ class ResidualConv3D(nn.Module):
         out = self.conv2(out)
         out = self.bn2(out)
 
+        if self.downsample is not None:
+            identity = self.downsample(x)
+
         out += identity
         out = self.relu(out)
 
@@ -119,18 +105,47 @@ class ResidualConv3D(nn.Module):
 
 
 class ContrastiveLoss(nn.Module):
+    """
+    Computes loss based on the distance between embeddings and the label indicating similarity.
+    """
     def __init__(self, margin=1.0):
         super(ContrastiveLoss, self).__init__()
         self.margin = margin
 
     def forward(self, distance, label):
-        return (
-            (label) * 0.5 * distance.pow(2) + \
-            (1 - label) * 0.5 * torch.clamp(self.margin - distance, min=0.0).pow(2)
-        ).mean()
+        loss = (label) * 0.5 * distance.pow(2) + \
+               (1 - label) * 0.5 * torch.clamp(self.margin - distance, min=0.0).pow(2)
+        return loss.mean()
 
 
 class SiaViT(pl.LightningModule):
+    """
+    Siamese Network with Vision Transformer for MIDI data.
+
+    Args:
+        embedding_dim (int): Dimension of the output embeddings.
+        data_dir (str): Directory containing the data.
+        t (int): Number of time steps.
+        o (int): Number of octaves.
+        batch_size (int): Batch size for training.
+        lr (float): Learning rate.
+        num_conv_layers (int): Number of convolutional layers.
+        conv_channels (list of int): Number of channels for each conv layer.
+        conv_kernel_sizes (list of tuple): Kernel sizes for each conv layer.
+        conv_strides (list of tuple): Strides for each conv layer.
+        conv_paddings (list of tuple): Paddings for each conv layer.
+        dropout_rates (list of float): Dropout rates for each conv layer.
+        maxpool_kernel_sizes (list of tuple): Max pooling kernel sizes for each conv layer.
+        transformer_d_model (int): Dimension of the transformer model.
+        transformer_nhead (int): Number of heads in the transformer.
+        transformer_num_layers (int): Number of transformer layers.
+        fc_hidden_dims (list of int): Hidden dimensions for the fully connected layers.
+        weight_decay (float): Weight decay for the optimizer.
+        use_AdamW (bool): Whether to use AdamW optimizer.
+        cl_margin (float): Margin for the contrastive loss.
+        warmup_proportion (float): Proportion of warmup steps for the scheduler.
+        wraparound_layers (list of bool): Whether to use wraparound padding for each conv layer.
+    """
     def __init__(
         self,
         embedding_dim=500,
@@ -155,7 +170,7 @@ class SiaViT(pl.LightningModule):
         use_AdamW=True,
         cl_margin=1.0,
         warmup_proportion=0.1,
-        wraparound_layers: list[bool] = None
+        wraparound_layers=None
     ):
         super(SiaViT, self).__init__()
         self.save_hyperparameters()
@@ -168,16 +183,7 @@ class SiaViT(pl.LightningModule):
         assert dropout_rates is not None, "dropout_rates must be provided"
         assert maxpool_kernel_sizes is not None, "maxpool_kernel_sizes must be provided"
         assert fc_hidden_dims is not None, "fc_hidden_dims must be provided"
-
-        self.conv_layers_params = {
-            'num_conv_layers': num_conv_layers,
-            'conv_channels': conv_channels,
-            'conv_kernel_sizes': conv_kernel_sizes,
-            'conv_strides': conv_strides,
-            'conv_paddings': conv_paddings,
-            'dropout_rates': dropout_rates,
-            'maxpool_kernel_sizes': maxpool_kernel_sizes,
-        }
+        assert wraparound_layers is not None, "wraparound_layers must be provided"
 
         # Build convolutional layers
         conv_layers = []
@@ -187,7 +193,7 @@ class SiaViT(pl.LightningModule):
             kernel_size = conv_kernel_sizes[i]
             stride = conv_strides[i]
             padding = conv_paddings[i]
-            use_wraparound = wraparound_layers[i] if wraparound_layers else False
+            use_wraparound = wraparound_layers[i]
             
             conv_layer = ResidualConv3D(
                 in_channels, out_channels,
@@ -197,8 +203,6 @@ class SiaViT(pl.LightningModule):
                 use_wraparound=use_wraparound
             )
             conv_layers.append(conv_layer)
-            conv_layers.append(nn.BatchNorm3d(out_channels))
-            conv_layers.append(nn.ReLU())
             conv_layers.append(nn.MaxPool3d(kernel_size=maxpool_kernel_sizes[i]))
             conv_layers.append(nn.Dropout(dropout_rates[i]))
             in_channels = out_channels
@@ -220,7 +224,7 @@ class SiaViT(pl.LightningModule):
             dropout=0.1,
             activation='relu',
             layer_norm_eps=1e-5,
-            # batch_first=False,  # seq_len as first dimension
+            batch_first=False,
             norm_first=False
         )
         self.transformer = nn.TransformerEncoder(
@@ -249,18 +253,21 @@ class SiaViT(pl.LightningModule):
         self.dynamic_threshold = 0.5
 
     def _compute_feature_dim(self):
-        # Function to compute the output size after convolution and pooling
+        """
+        Computes the feature dimension after the convolutional layers.
+        """
         def compute_output_size(input_size, kernel_size, stride, padding):
             return (input_size + 2 * padding - kernel_size) // stride + 1
 
         # Initial sizes
-        p_size = 12
-        o_size = self.hparams.o
-        t_size = self.hparams.t
+        p_size = 12  # pitch dimension
+        o_size = self.hparams.o  # octave dimension
+        t_size = self.hparams.t  # time dimension
 
         for i in range(self.hparams.num_conv_layers):
-            # Wraparound padding adds 2 to pitch size
-            p_size += 2
+            # Wraparound padding adds 2 to pitch size only if used
+            if self.hparams.wraparound_layers[i]:
+                p_size += 2
 
             # Conv layer parameters
             kernel_size = self.hparams.conv_kernel_sizes[i]
@@ -288,35 +295,84 @@ class SiaViT(pl.LightningModule):
         # After convolutional layers, compute feature_dim
         c = self.hparams.conv_channels[-1]
         feature_dim = c * p_size * o_size
+        self.seq_len = t_size  # Save sequence length for later use
         return feature_dim
 
     def forward_one(self, x):
-        # x shape: (batch, 12, o, t)
-        x = x.unsqueeze(1)  # Add channel dimension: (batch, 1, 12, o, t)
+        """
+        Forward pass for one input in the siamese network.
+
+        Args:
+            x (Tensor): Input tensor of shape (batch_size, 12, o, t).
+
+        Returns:
+            Tensor: Normalized embedding of the input.
+        """
+        x = x.unsqueeze(1)  # (batch_size, 1, 12, o, t)
         x = self.conv(x)
-        # Flatten for transformer: (batch, features, seq_len)
-        x = rearrange(x, 'b c p o t -> b (c p o) t')
-        x = x.permute(2, 0, 1)  # (seq_len, batch, features)
+        # x shape after conv: (batch_size, c, p, o, t)
+        b, c, p, o, t = x.shape
+        # Verify feature dimensions
+        expected_feature_dim = c * p * o
+        assert self.feature_dim == expected_feature_dim, \
+            f"Feature dimensions do not match! Expected {self.feature_dim}, got {expected_feature_dim}"
+
+        # Flatten for transformer: (batch_size, features, seq_len)
+        x = x.view(b, c * p * o, t)
+        x = x.permute(2, 0, 1)  # (seq_len, batch_size, features)
         x = self.feature_projection(x)  # Project features to transformer_d_model
         x = self.transformer(x)
-        x = x.mean(dim=0)  # (batch, features)
+        x = x.mean(dim=0)  # (batch_size, transformer_d_model)
         x = self.fc(x)
         x = nn.functional.normalize(x, p=2, dim=1)  # Euclidean normalization
         return x
-    
+
     def compute_distance(self, emb1, emb2):
+        """
+        Computes the Euclidean distance between two embeddings.
+
+        Args:
+            emb1 (Tensor): First embedding.
+            emb2 (Tensor): Second embedding.
+
+        Returns:
+            Tensor: Distance between embeddings.
+        """
         return torch.norm(emb1 - emb2, p=2, dim=1)
 
     def forward(self, x1, x2):
+        """
+        Forward pass for the siamese network.
+
+        Args:
+            x1 (Tensor): First input tensor.
+            x2 (Tensor): Second input tensor.
+
+        Returns:
+            Tensor: Distance between the embeddings of the inputs.
+        """
         emb1 = self.forward_one(x1)
         emb2 = self.forward_one(x2)
         return self.compute_distance(emb1, emb2)
-    
+
     def train_dataloader(self):
+        """
+        Returns the training dataloader.
+        """
         train_dataset = MIDIDataset(self.hparams.data_dir, self.hparams.t, split='train')
-        return DataLoader(train_dataset, batch_size=self.hparams.batch_size, shuffle=True, num_workers=4)
+        return DataLoader(train_dataset, batch_size=self.hparams.batch_size, shuffle=True, num_workers=NUM_WORKERS_PER_DATALOADER)
 
     def training_step(self, batch, batch_idx):
+        """
+        Training step.
+
+        Args:
+            batch: Batch data.
+            batch_idx: Batch index.
+
+        Returns:
+            Tensor: Loss value.
+        """
         (x1, x2), y = batch
         distance = self.forward(x1, x2)
         y = y.float()
@@ -325,6 +381,9 @@ class SiaViT(pl.LightningModule):
         return loss
 
     def val_dataloader(self):
+        """
+        Returns a list of validation dataloaders for different validation sets.
+        """
         val_dataset_similar = MIDIDataset(
             self.hparams.data_dir, self.hparams.t, split='val', pair_type='similar'
         )
@@ -338,16 +397,16 @@ class SiaViT(pl.LightningModule):
             self.hparams.data_dir, self.hparams.t, split='val', pair_type='mixed'
         )
         val_loader_similar = DataLoader(
-            val_dataset_similar, batch_size=self.hparams.batch_size, num_workers=4
+            val_dataset_similar, batch_size=self.hparams.batch_size, num_workers=NUM_WORKERS_PER_DATALOADER
         )
         val_loader_dissimilar = DataLoader(
-            val_dataset_dissimilar, batch_size=self.hparams.batch_size, num_workers=4
+            val_dataset_dissimilar, batch_size=self.hparams.batch_size, num_workers=NUM_WORKERS_PER_DATALOADER
         )
         val_loader_mixed = DataLoader(
-            val_dataset_mixed, batch_size=self.hparams.batch_size, num_workers=4
+            val_dataset_mixed, batch_size=self.hparams.batch_size, num_workers=NUM_WORKERS_PER_DATALOADER
         )
         threshold_optim_dataloader_mixed = DataLoader(
-            threshold_optim_dataset_mixed, batch_size=self.hparams.batch_size, num_workers=4
+            threshold_optim_dataset_mixed, batch_size=self.hparams.batch_size, num_workers=NUM_WORKERS_PER_DATALOADER
         )
         return [
             threshold_optim_dataloader_mixed, 
@@ -357,6 +416,17 @@ class SiaViT(pl.LightningModule):
         ]
 
     def validation_step(self, batch, batch_idx, dataloader_idx=0):
+        """
+        Validation step.
+
+        Args:
+            batch: Batch data.
+            batch_idx: Batch index.
+            dataloader_idx: Index of the dataloader.
+
+        Returns:
+            dict: Dictionary containing loss and accuracy.
+        """
         (x1, x2), y = batch
         distance = self.forward(x1, x2)
         y = y.float()
@@ -434,8 +504,11 @@ class SiaViT(pl.LightningModule):
             raise AssertionError("dataloader_idx out of bounds")
 
         return {'val_loss': loss, 'val_acc': acc}
-    
+
     def configure_optimizers(self):
+        """
+        Configures the optimizer and learning rate scheduler.
+        """
         # Choose optimizer
         if self.hparams.use_AdamW:
             optimizer = torch.optim.AdamW(
@@ -450,15 +523,12 @@ class SiaViT(pl.LightningModule):
             )
 
         # Total training steps
-        # Note: self.trainer is accessible here
-        num_epochs = self.trainer.max_epochs
-        num_training_steps_per_epoch = self.trainer.estimated_stepping_batches
-        total_steps = num_epochs * num_training_steps_per_epoch
+        total_steps = self.trainer.estimated_stepping_batches
 
         # Warmup steps (e.g., first 10% of total steps)
         warmup_steps = int(self.hparams.warmup_proportion * total_steps)
 
-        # Define the composite scheduler
+        # Define the scheduler
         scheduler = get_cosine_schedule_with_warmup(
             optimizer,
             num_warmup_steps=warmup_steps,

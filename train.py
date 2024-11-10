@@ -24,7 +24,7 @@ if __name__ == '__main__':
         conv_strides=[(1, 1, 2), (1, 1, 2), (1, 1, 2)],
         conv_paddings=[(1, 1, 1), (1, 1, 1), (1, 1, 1)],
         dropout_rates=[0.3, 0.3, 0.3],
-        maxpool_kernel_sizes=[(2, 2, 2), (2, 2, 2), (2, 2, 2)],
+        maxpool_kernel_sizes=[(2, 1, 2), (2, 1, 2), (2, 1, 2)],
         transformer_d_model=256,
         transformer_nhead=8,
         transformer_num_layers=4,
