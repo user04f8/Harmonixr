@@ -8,7 +8,7 @@ torch.set_float32_matmul_precision('high')
 
 TICKS_PER_MINUTE = 20 * 60
 
-hparams = {
+big_hparams = {
     'embedding_dim': 256,
     'data_dir': './data',
     't': 1 * TICKS_PER_MINUTE,
@@ -29,6 +29,30 @@ hparams = {
     'weight_decay': 2e-6,
     'use_AdamW': True
 }
+
+shallow_hparams = {
+    'embedding_dim': 64,
+    'data_dir': './data',
+    't': 1 * TICKS_PER_MINUTE // 2,
+    'o': 6, 
+    'batch_size': 1000,
+    'lr': 5e-6,
+    'num_conv_layers': 2,
+    'conv_channels': [32, 64],
+    'conv_kernel_sizes': [(9,3,9), (5,3,5)],
+    'conv_strides': [(1,1,4), (1,1,2)],
+    'conv_paddings': [(4,1,4), (2,1,2)],
+    'dropout_rates': [0.3, 0.3],
+    'maxpool_kernel_sizes': [(1,1,2), (1,1,2)],
+    'transformer_d_model': 256,
+    'transformer_nhead': 16,
+    'transformer_num_layers': 2,
+    'fc_hidden_dims': [128],
+    'weight_decay': 2e-6,
+    'use_AdamW': True
+}
+
+hparams = shallow_hparams
 
 if __name__ == '__main__':
     
