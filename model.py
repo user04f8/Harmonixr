@@ -39,25 +39,57 @@ def get_cosine_schedule_with_warmup(
     
     return torch.optim.lr_scheduler.LambdaLR(optimizer, lr_lambda, last_epoch)
 
+
 class WraparoundConv3D(nn.Module):
-    def __init__(self, in_channels, out_channels, kernel_size, stride=1, padding=0):
+    def __init__(self, in_channels, out_channels, kernel_size, stride=1, padding=0, use_wraparound=False):
         super(WraparoundConv3D, self).__init__()
+        self.use_wraparound = use_wraparound
         self.conv = nn.Conv3d(
             in_channels, out_channels, kernel_size,
             stride=stride, padding=padding
         )
-        # Initialize weights
         nn.init.kaiming_normal_(self.conv.weight, mode='fan_out', nonlinearity='relu')
 
     def forward(self, x):
-        # x shape: (batch, channels, pitch, octave, time)
-        # Wraparound padding on pitch dimension
-        pitch_dim = 2
-        # Wrap around pitches
-        pad_front = x[:, :, -1:, :, :].clone()
-        pad_back = x[:, :, :1, :, :].clone()
-        x = torch.cat([pad_front, x, pad_back], dim=pitch_dim)
+        if self.use_wraparound:
+            # Apply wraparound padding on pitch (dim 2) and optionally octave (dim 3)
+            pad_front = x[:, :, -1:, :, :].clone()
+            pad_back = x[:, :, :1, :, :].clone()
+            x = torch.cat([pad_front, x, pad_back], dim=2)
         return self.conv(x)
+
+
+class ResidualConv3D(nn.Module):
+    def __init__(self, in_channels, out_channels, kernel_size, stride=1, padding=0, use_wraparound=False):
+        super(ResidualConv3D, self).__init__()
+        self.conv1 = WraparoundConv3D(in_channels, out_channels, kernel_size, stride, padding, use_wraparound)
+        self.bn1 = nn.BatchNorm3d(out_channels)
+        self.relu = nn.ReLU()
+        self.conv2 = WraparoundConv3D(out_channels, out_channels, kernel_size, stride=1, padding=padding, use_wraparound=use_wraparound)
+        self.bn2 = nn.BatchNorm3d(out_channels)
+        
+        if in_channels != out_channels or stride != 1:
+            self.residual = nn.Sequential(
+                nn.Conv3d(in_channels, out_channels, kernel_size=1, stride=stride),
+                nn.BatchNorm3d(out_channels)
+            )
+        else:
+            self.residual = nn.Identity()
+        
+        nn.init.kaiming_normal_(self.conv1.conv.weight, mode='fan_out', nonlinearity='relu')
+        nn.init.kaiming_normal_(self.conv2.conv.weight, mode='fan_out', nonlinearity='relu')
+
+    def forward(self, x):
+        identity = self.residual(x)
+        out = self.conv1(x)
+        out = self.bn1(out)
+        out = self.relu(out)
+        out = self.conv2(out)
+        out = self.bn2(out)
+        out += identity
+        out = self.relu(out)
+        return out
+
 
 class ContrastiveLoss(nn.Module):
     def __init__(self, margin=1.0):
@@ -70,13 +102,14 @@ class ContrastiveLoss(nn.Module):
             (1 - label) * 0.5 * torch.clamp(self.margin - distance, min=0.0).pow(2)
         ).mean()
 
+
 class SiaViT(pl.LightningModule):
     def __init__(
         self,
         embedding_dim=500,
         data_dir='./data',
-        t=128,
-        o=8,
+        t=20 * 60,
+        o=6,
         batch_size=32,
         lr=1e-3,
         threshold='deprecated',  # now dynamic
@@ -94,7 +127,8 @@ class SiaViT(pl.LightningModule):
         weight_decay=1e-5,
         use_AdamW=True,
         cl_margin=1.0,
-        warmup_proportion=0.1  # Proportion of total steps for warmup
+        warmup_proportion=0.1,
+        wraparound_layers: list[bool] = None
     ):
         super(SiaViT, self).__init__()
         self.save_hyperparameters()
@@ -120,24 +154,25 @@ class SiaViT(pl.LightningModule):
 
         # Build convolutional layers
         conv_layers = []
-        in_channels = 1  # Starting from 1 channel after unsqueeze
+        in_channels = 1
         for i in range(num_conv_layers):
             out_channels = conv_channels[i]
             kernel_size = conv_kernel_sizes[i]
             stride = conv_strides[i]
             padding = conv_paddings[i]
-            conv_layer = WraparoundConv3D(
-                in_channels,
-                out_channels,
+            use_wraparound = wraparound_layers[i] if wraparound_layers else False
+            
+            conv_layer = ResidualConv3D(
+                in_channels, out_channels,
                 kernel_size=kernel_size,
                 stride=stride,
-                padding=padding
+                padding=padding,
+                use_wraparound=use_wraparound
             )
             conv_layers.append(conv_layer)
             conv_layers.append(nn.BatchNorm3d(out_channels))
             conv_layers.append(nn.ReLU())
-            maxpool_kernel_size = maxpool_kernel_sizes[i]
-            conv_layers.append(nn.MaxPool3d(kernel_size=maxpool_kernel_size))
+            conv_layers.append(nn.MaxPool3d(kernel_size=maxpool_kernel_sizes[i]))
             conv_layers.append(nn.Dropout(dropout_rates[i]))
             in_channels = out_channels
 

@@ -1,6 +1,6 @@
 import torch
 import pytorch_lightning as pl
-from pytorch_lightning.callbacks import EarlyStopping, ModelCheckpoint
+from pytorch_lightning.callbacks import ModelCheckpoint
 from pytorch_lightning.loggers import TensorBoardLogger
 from model import SiaViT
 
@@ -8,70 +8,36 @@ torch.set_float32_matmul_precision('high')
 
 TICKS_PER_MINUTE = 20 * 60
 
-big_hparams = {
-    'embedding_dim': 256,
-    'data_dir': './data',
-    't': 1 * TICKS_PER_MINUTE,
-    'o': 6, 
-    'batch_size': 100,
-    'lr': 5e-6,
-    'num_conv_layers': 4,
-    'conv_channels': [32, 64, 128, 256],
-    'conv_kernel_sizes': [(9,3,9), (5,3,5), (3,3,3), (3,3,3)],
-    'conv_strides': [(1,1,2), (1,1,2), (1,1,2), (1,1,2)],
-    'conv_paddings': [(4,1,4), (2,1,2), (1,1,1), (1,1,1)],
-    'dropout_rates': [0.3, 0.3, 0.3, 0.3],
-    'maxpool_kernel_sizes': [(1,1,2), (1,1,2), (1,1,2), (1,1,2)],
-    'transformer_d_model': 256,
-    'transformer_nhead': 8,
-    'transformer_num_layers': 4,
-    'fc_hidden_dims': [512, 256],
-    'weight_decay': 2e-6,
-    'use_AdamW': True
-}
-
-shallow_hparams = {
-    'embedding_dim': 128,
-    'data_dir': './data',
-    't': 1 * TICKS_PER_MINUTE,
-    'o': 6, 
-    'batch_size': 200,
-    'lr': 5e-5,
-    'num_conv_layers': 3,
-    'conv_channels': [32, 64, 64],
-    'conv_kernel_sizes': [(5,3,5), (5,3,5), (3,3,3)],
-    'conv_strides': [(1,1,4), (1,1,4), (1,1,2)],
-    'conv_paddings': [(2,1,2), (2,1,2), (1,1,1)],
-    'dropout_rates': [0.5, 0.3, 0.2],
-    'maxpool_kernel_sizes': [(1,1,4), (1,1,4), (1,1,2)],
-    # convs: 1200 -> 75 -> 4 -> 1
-
-    'transformer_d_model': 256,
-    'transformer_nhead': 16,
-    'transformer_num_layers': 3,
-    'fc_hidden_dims': [256, 128],
-    'weight_decay': 1e-5,
-    'use_AdamW': True
-}
-
-hparams = shallow_hparams
-
 if __name__ == '__main__':
 
     # Instantiate the model
-    model = SiaViT(**hparams)
+    model = SiaViT(
+        embedding_dim=500,
+        data_dir='./data',
+        t=TICKS_PER_MINUTE,
+        o=6,
+        batch_size=32,
+        lr=1e-3,
+        num_conv_layers=3,
+        conv_channels=[16, 32, 64],
+        conv_kernel_sizes=[(3, 3, 3), (3, 3, 3), (3, 3, 3)],
+        conv_strides=[(1, 1, 2), (1, 1, 2), (1, 1, 2)],
+        conv_paddings=[(1, 1, 1), (1, 1, 1), (1, 1, 1)],
+        dropout_rates=[0.3, 0.3, 0.3],
+        maxpool_kernel_sizes=[(2, 2, 2), (2, 2, 2), (2, 2, 2)],
+        transformer_d_model=256,
+        transformer_nhead=8,
+        transformer_num_layers=4,
+        fc_hidden_dims=[128, 64],
+        weight_decay=1e-5,
+        use_AdamW=True,
+        cl_margin=1.0,
+        warmup_proportion=0.1,
+        wraparound_layers=[True, False, False]
+    )
 
     # Set up logger
     logger = TensorBoardLogger("tb_logs", name="SiaViT")
-
-    # Define callbacks
-    # early_stop_callback = EarlyStopping(
-    #     monitor='val_acc',
-    #     min_delta=0.00,
-    #     patience=5,
-    #     verbose=True,
-    #     mode='max'
-    # )
 
     checkpoint_callback = ModelCheckpoint(
         monitor='val_loss_mixed',
