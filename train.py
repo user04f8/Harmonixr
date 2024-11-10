@@ -20,13 +20,13 @@ hparams = {
     'conv_kernel_sizes': [(9,3,9), (5,3,5), (3,3,3), (3,3,3)],
     'conv_strides': [(1,1,2), (1,1,2), (1,1,2), (1,1,2)],
     'conv_paddings': [(4,1,4), (2,1,2), (1,1,1), (1,1,1)],
-    'dropout_rates': [0.2, 0.2, 0.2, 0.2],
+    'dropout_rates': [0.3, 0.3, 0.3, 0.3],
     'maxpool_kernel_sizes': [(1,1,2), (1,1,2), (1,1,2), (1,1,2)],
     'transformer_d_model': 256,
     'transformer_nhead': 8,
     'transformer_num_layers': 4,
     'fc_hidden_dims': [512, 256],
-    'weight_decay': 1e-6,
+    'weight_decay': 2e-6,
     'use_AdamW': True
 }
 
