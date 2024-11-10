@@ -35,15 +35,17 @@ shallow_hparams = {
     'data_dir': './data',
     't': 1 * TICKS_PER_MINUTE,
     'o': 6, 
-    'batch_size': 400,
-    'lr': 5e-6,
+    'batch_size': 200,
+    'lr': 5e-5,
     'num_conv_layers': 3,
     'conv_channels': [32, 64, 64],
     'conv_kernel_sizes': [(5,3,5), (5,3,5), (3,3,3)],
-    'conv_strides': [(1,1,4), (1,1,2), (1,1,2)],
-    'conv_paddings': [(4,1,4), (2,1,2), (1,1,1)],
+    'conv_strides': [(1,1,4), (1,1,4), (1,1,2)],
+    'conv_paddings': [(2,1,2), (2,1,2), (1,1,1)],
     'dropout_rates': [0.5, 0.3, 0.2],
-    'maxpool_kernel_sizes': [(1,1,4), (1,1,4), (1,1,4)],
+    'maxpool_kernel_sizes': [(1,1,4), (1,1,4), (1,1,2)],
+    # convs: 1200 -> 75 -> 4 -> 1
+
     'transformer_d_model': 256,
     'transformer_nhead': 16,
     'transformer_num_layers': 3,
@@ -55,29 +57,6 @@ shallow_hparams = {
 hparams = shallow_hparams
 
 if __name__ == '__main__':
-    
-
-    # hparams = {
-    #     'embedding_dim': 128,
-    #     'data_dir': './data',
-    #     't': 20 * 180,
-    #     'o': 6,  # Number of octaves, based on data shape [12, 6, T]
-    #     'batch_size': 32,
-    #     'lr': 1e-7,
-    #     'threshold': 0.5,
-    #     'num_conv_layers': 2,
-    #     'conv_channels': [16, 32],
-    #     'conv_kernel_sizes': [(5,3,5), (3,3,3)],
-    #     'conv_strides': [(1,1,2), (1,1,2)],
-    #     'conv_paddings': [(2,1,2), (1,1,1)],
-    #     'dropout_rates': [0.3, 0.3],
-    #     'maxpool_kernel_sizes': [(1,1,2), (1,1,2)],
-    #     'transformer_d_model': 128,
-    #     'transformer_nhead': 4,  # transformer_d_model must be divisible by nhead
-    #     'transformer_num_layers': 2,
-    #     'fc_hidden_dims': [128, 256],
-    #     'weight_decay': 1e-5,
-    # }
 
     # Instantiate the model
     model = SiaViT(**hparams)

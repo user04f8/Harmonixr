@@ -1,10 +1,43 @@
+import math
 import torch
 import torch.nn as nn
 import pytorch_lightning as pl
-from torch.optim.lr_scheduler import ReduceLROnPlateau
 from torch.utils.data import DataLoader
 from einops import rearrange
 from data import MIDIDataset
+from pytorch_lightning.callbacks import LearningRateMonitor
+
+def get_cosine_schedule_with_warmup(
+    optimizer, 
+    num_warmup_steps, 
+    num_training_steps, 
+    eta_min=0, 
+    last_epoch=-1
+):
+    """
+    Create a schedule with a learning rate that increases linearly from 0 to 1
+    during the warmup phase and then decreases to `eta_min` following a cosine curve.
+
+    Args:
+        optimizer (Optimizer): Optimizer to apply the schedule to.
+        num_warmup_steps (int): Number of steps for the warmup phase.
+        num_training_steps (int): Total number of training steps.
+        eta_min (float, optional): The minimum learning rate. Default: 0.
+        last_epoch (int, optional): The index of the last epoch. Default: -1.
+
+    Returns:
+        LambdaLR: PyTorch LambdaLR scheduler.
+    """
+    def lr_lambda(current_step):
+        if current_step < num_warmup_steps:
+            return float(current_step) / float(max(1, num_warmup_steps))
+        progress = float(current_step - num_warmup_steps) / float(max(1, num_training_steps - num_warmup_steps))
+        return max(
+            0.0, 
+            0.5 * (1.0 + math.cos(math.pi * progress))
+        )
+    
+    return torch.optim.lr_scheduler.LambdaLR(optimizer, lr_lambda, last_epoch)
 
 class WraparoundConv3D(nn.Module):
     def __init__(self, in_channels, out_channels, kernel_size, stride=1, padding=0):
@@ -25,6 +58,17 @@ class WraparoundConv3D(nn.Module):
         pad_back = x[:, :, :1, :, :].clone()
         x = torch.cat([pad_front, x, pad_back], dim=pitch_dim)
         return self.conv(x)
+
+class ContrastiveLoss(nn.Module):
+    def __init__(self, margin=1.0):
+        super(ContrastiveLoss, self).__init__()
+        self.margin = margin
+
+    def forward(self, distance, label):
+        return (
+            (label) * 0.5 * distance.pow(2) + \
+            (1 - label) * 0.5 * torch.clamp(self.margin - distance, min=0.0).pow(2)
+        ).mean()
 
 class SiaViT(pl.LightningModule):
     def __init__(
@@ -49,11 +93,21 @@ class SiaViT(pl.LightningModule):
         fc_hidden_dims=None,
         weight_decay=1e-5,
         use_AdamW=True,
-        cl_margin=1.0
+        cl_margin=1.0,
+        warmup_proportion=0.1  # Proportion of total steps for warmup
     ):
         super(SiaViT, self).__init__()
         self.save_hyperparameters()
         
+        # Ensure that list hyperparameters are provided
+        assert conv_channels is not None, "conv_channels must be provided"
+        assert conv_kernel_sizes is not None, "conv_kernel_sizes must be provided"
+        assert conv_strides is not None, "conv_strides must be provided"
+        assert conv_paddings is not None, "conv_paddings must be provided"
+        assert dropout_rates is not None, "dropout_rates must be provided"
+        assert maxpool_kernel_sizes is not None, "maxpool_kernel_sizes must be provided"
+        assert fc_hidden_dims is not None, "fc_hidden_dims must be provided"
+
         self.conv_layers_params = {
             'num_conv_layers': num_conv_layers,
             'conv_channels': conv_channels,
@@ -185,7 +239,7 @@ class SiaViT(pl.LightningModule):
         x = self.transformer(x)
         x = x.mean(dim=0)  # (batch, features)
         x = self.fc(x)
-        x = nn.functional.normalize(x, p=2, dim=1)  # Euclidean normalization NOTE lose one degree of freedom in exchange for more stability?
+        x = nn.functional.normalize(x, p=2, dim=1)  # Euclidean normalization
         return x
     
     def compute_distance(self, emb1, emb2):
@@ -198,7 +252,7 @@ class SiaViT(pl.LightningModule):
     
     def train_dataloader(self):
         train_dataset = MIDIDataset(self.hparams.data_dir, self.hparams.t, split='train')
-        return DataLoader(train_dataset, batch_size=self.hparams.batch_size, shuffle=True, num_workers=0)
+        return DataLoader(train_dataset, batch_size=self.hparams.batch_size, shuffle=True, num_workers=4)
 
     def training_step(self, batch, batch_idx):
         (x1, x2), y = batch
@@ -222,18 +276,23 @@ class SiaViT(pl.LightningModule):
             self.hparams.data_dir, self.hparams.t, split='val', pair_type='mixed'
         )
         val_loader_similar = DataLoader(
-            val_dataset_similar, batch_size=self.hparams.batch_size, num_workers=0
+            val_dataset_similar, batch_size=self.hparams.batch_size, num_workers=4
         )
         val_loader_dissimilar = DataLoader(
-            val_dataset_dissimilar, batch_size=self.hparams.batch_size, num_workers=0
+            val_dataset_dissimilar, batch_size=self.hparams.batch_size, num_workers=4
         )
         val_loader_mixed = DataLoader(
-            val_dataset_mixed, batch_size=self.hparams.batch_size, num_workers=0
+            val_dataset_mixed, batch_size=self.hparams.batch_size, num_workers=4
         )
         threshold_optim_dataloader_mixed = DataLoader(
-            threshold_optim_dataset_mixed, batch_size=self.hparams.batch_size, num_workers=0
+            threshold_optim_dataset_mixed, batch_size=self.hparams.batch_size, num_workers=4
         )
-        return [threshold_optim_dataloader_mixed, val_loader_mixed, val_loader_similar, val_loader_dissimilar]
+        return [
+            threshold_optim_dataloader_mixed, 
+            val_loader_mixed, 
+            val_loader_similar, 
+            val_loader_dissimilar
+        ]
 
     def validation_step(self, batch, batch_idx, dataloader_idx=0):
         (x1, x2), y = batch
@@ -241,16 +300,14 @@ class SiaViT(pl.LightningModule):
         y = y.float()
         loss = self.criterion(distance, y)
         
-        if dataloader_idx == 0: # threshold_optim_dataloader_mixed
-            thresholds = torch.linspace(0, 1, steps=1001)
+        if dataloader_idx == 0:  # threshold_optim_dataloader_mixed
+            thresholds = torch.linspace(0, 1, steps=1001).to(self.device)
             accuracies = []
-
             for threshold in thresholds:
                 preds = (distance < threshold).long()
                 acc = (preds == y.long()).float().mean()
                 accuracies.append(acc.item())
-
-            accuracies = torch.tensor(accuracies)
+            accuracies = torch.tensor(accuracies).to(self.device)
             max_idx = torch.argmax(accuracies)
             optimal_threshold = thresholds[max_idx].item()
             acc = accuracies[max_idx].item()
@@ -259,28 +316,65 @@ class SiaViT(pl.LightningModule):
             acc = (preds == y.long()).float().mean()
 
         if dataloader_idx == 0:
-            self.log('psuedoval_loss_mixed', loss, on_step=False, on_epoch=True, prog_bar=False, add_dataloader_idx=False)
-            self.log('psuedoval_acc_mixed', acc, on_step=False, on_epoch=True, prog_bar=True, add_dataloader_idx=False)
-            self.log('optimal_threshold', optimal_threshold, on_step=False, on_epoch=True, prog_bar=True, add_dataloader_idx=False)
+            self.log(
+                'psuedoval_loss_mixed', loss, 
+                on_step=False, on_epoch=True, prog_bar=False, 
+                add_dataloader_idx=False
+            )
+            self.log(
+                'psuedoval_acc_mixed', acc, 
+                on_step=False, on_epoch=True, prog_bar=True, 
+                add_dataloader_idx=False
+            )
+            self.log(
+                'optimal_threshold', optimal_threshold, 
+                on_step=False, on_epoch=True, prog_bar=True, 
+                add_dataloader_idx=False
+            )
 
             self.dynamic_threshold = optimal_threshold
         elif dataloader_idx == 1:
-            self.log('val_loss_mixed', loss, on_step=False, on_epoch=True, prog_bar=True, add_dataloader_idx=False)
-            self.log('val_acc_mixed', acc, on_step=False, on_epoch=True, prog_bar=True, add_dataloader_idx=False)
+            self.log(
+                'val_loss_mixed', loss, 
+                on_step=False, on_epoch=True, prog_bar=True, 
+                add_dataloader_idx=False
+            )
+            self.log(
+                'val_acc_mixed', acc, 
+                on_step=False, on_epoch=True, prog_bar=True, 
+                add_dataloader_idx=False
+            )
         elif dataloader_idx == 2:
             # Similar pairs
-            self.log('val_loss_similar', loss, on_step=False, on_epoch=True, prog_bar=False, add_dataloader_idx=False)
-            self.log('val_acc_similar', acc, on_step=False, on_epoch=True, prog_bar=True, add_dataloader_idx=False)
+            self.log(
+                'val_loss_similar', loss, 
+                on_step=False, on_epoch=True, prog_bar=False, 
+                add_dataloader_idx=False
+            )
+            self.log(
+                'val_acc_similar', acc, 
+                on_step=False, on_epoch=True, prog_bar=True, 
+                add_dataloader_idx=False
+            )
         elif dataloader_idx == 3:
             # Dissimilar pairs
-            self.log('val_loss_dissimilar', loss, on_step=False, on_epoch=True, prog_bar=False, add_dataloader_idx=False)
-            self.log('val_acc_dissimilar', acc, on_step=False, on_epoch=True, prog_bar=True, add_dataloader_idx=False)
+            self.log(
+                'val_loss_dissimilar', loss, 
+                on_step=False, on_epoch=True, prog_bar=False, 
+                add_dataloader_idx=False
+            )
+            self.log(
+                'val_acc_dissimilar', acc, 
+                on_step=False, on_epoch=True, prog_bar=True, 
+                add_dataloader_idx=False
+            )
         else:
             raise AssertionError("dataloader_idx out of bounds")
 
         return {'val_loss': loss, 'val_acc': acc}
     
     def configure_optimizers(self):
+        # Choose optimizer
         if self.hparams.use_AdamW:
             optimizer = torch.optim.AdamW(
                 self.parameters(),
@@ -293,53 +387,31 @@ class SiaViT(pl.LightningModule):
                 lr=self.hparams.lr
             )
 
+        # Total training steps
+        # Note: self.trainer is accessible here
         num_epochs = self.trainer.max_epochs
-        num_training_steps = self.trainer.estimated_stepping_batches
+        num_training_steps_per_epoch = self.trainer.estimated_stepping_batches
+        total_steps = num_epochs * num_training_steps_per_epoch
 
-        warmup_steps = int(num_training_steps * (5 / num_epochs))
-        anneal_start_epoch = max(0, num_epochs - 10)
-        anneal_start_steps = int(num_training_steps * (anneal_start_epoch / num_epochs))
-        anneal_steps = num_training_steps - anneal_start_steps
+        # Warmup steps (e.g., first 10% of total steps)
+        warmup_steps = int(self.hparams.warmup_proportion * total_steps)
 
-        warmup_scheduler = {
-            'scheduler': torch.optim.lr_scheduler.LinearLR(
-                optimizer, start_factor=1e-6, end_factor=1.0, total_iters=warmup_steps, verbose=True
-            ),
-            'interval': 'step',
-            'frequency': 1
+        # Define the composite scheduler
+        scheduler = get_cosine_schedule_with_warmup(
+            optimizer,
+            num_warmup_steps=warmup_steps,
+            num_training_steps=total_steps,
+            eta_min=0
+        )
+
+        scheduler_config = {
+            'scheduler': scheduler,
+            'interval': 'step',  # Step-based scheduling
+            'frequency': 1,
+            'name': 'cosine_with_warmup'
         }
 
-        plateau_scheduler = {
-            'scheduler': torch.optim.lr_scheduler.ReduceLROnPlateau(
-                optimizer,
-                mode='min',
-                factor=0.1,
-                patience=3,
-                verbose=True
-            ),
-            'monitor': 'val_loss_mixed',
-            'interval': 'epoch',
-            'frequency': 1
+        return {
+            'optimizer': optimizer,
+            'lr_scheduler': scheduler_config
         }
-
-        annealing_scheduler = {
-            'scheduler': torch.optim.lr_scheduler.LinearLR(
-                optimizer, start_factor=1.0, end_factor=0.0, total_iters=anneal_steps, verbose=True
-            ),
-            'interval': 'step',
-            'frequency': 1
-        }
-
-        schedulers = [warmup_scheduler, plateau_scheduler, annealing_scheduler]
-        return [optimizer], schedulers
-
-class ContrastiveLoss(nn.Module):
-    def __init__(self, margin=1.0):
-        super(ContrastiveLoss, self).__init__()
-        self.margin = margin
-
-    def forward(self, distance, label):
-        return (
-            (label) * 0.5 * distance.pow(2) + \
-            (1 - label) * 0.5 * torch.clamp(self.margin - distance, min=0.0).pow(2)
-        ).mean()
