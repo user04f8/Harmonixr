@@ -31,24 +31,24 @@ big_hparams = {
 }
 
 shallow_hparams = {
-    'embedding_dim': 64,
+    'embedding_dim': 128,
     'data_dir': './data',
-    't': 1 * TICKS_PER_MINUTE // 2,
+    't': 1 * TICKS_PER_MINUTE,
     'o': 6, 
-    'batch_size': 1000,
+    'batch_size': 400,
     'lr': 5e-6,
-    'num_conv_layers': 2,
-    'conv_channels': [32, 64],
-    'conv_kernel_sizes': [(9,3,9), (5,3,5)],
-    'conv_strides': [(1,1,4), (1,1,2)],
-    'conv_paddings': [(4,1,4), (2,1,2)],
-    'dropout_rates': [0.3, 0.3],
-    'maxpool_kernel_sizes': [(1,1,2), (1,1,2)],
+    'num_conv_layers': 3,
+    'conv_channels': [32, 64, 64],
+    'conv_kernel_sizes': [(5,3,5), (5,3,5), (3,3,3)],
+    'conv_strides': [(1,1,4), (1,1,2), (1,1,2)],
+    'conv_paddings': [(4,1,4), (2,1,2), (1,1,1)],
+    'dropout_rates': [0.5, 0.3, 0.2],
+    'maxpool_kernel_sizes': [(1,1,4), (1,1,4), (1,1,4)],
     'transformer_d_model': 256,
     'transformer_nhead': 16,
-    'transformer_num_layers': 2,
-    'fc_hidden_dims': [128],
-    'weight_decay': 2e-6,
+    'transformer_num_layers': 3,
+    'fc_hidden_dims': [256, 128],
+    'weight_decay': 1e-5,
     'use_AdamW': True
 }
 
