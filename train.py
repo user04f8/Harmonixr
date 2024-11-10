@@ -28,6 +28,7 @@ if __name__ == '__main__':
         transformer_d_model=1024,
         transformer_nhead=16,
         transformer_num_layers=2,
+        transformer_dropout=0.2,
         fc_hidden_dims=[128],
         weight_decay=1e-5,
         use_AdamW=True,

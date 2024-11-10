@@ -229,7 +229,8 @@ class SiaViT(pl.LightningModule):
         cl_margin=1.0,
         cl_margin_dynamic=True,
         warmup_proportion=0.1,
-        wraparound_layers=None
+        wraparound_layers=None,
+        transformer_dropout=0.1
     ):
         super(SiaViT, self).__init__()
         self.save_hyperparameters()
@@ -280,7 +281,7 @@ class SiaViT(pl.LightningModule):
             d_model=transformer_d_model,
             nhead=transformer_nhead,
             dim_feedforward=2048,
-            dropout=0.1,
+            dropout=transformer_dropout,
             activation='relu',
             layer_norm_eps=1e-5,
             batch_first=False,
