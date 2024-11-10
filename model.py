@@ -35,7 +35,7 @@ class SiaViT(pl.LightningModule):
         o=8,
         batch_size=32,
         lr=1e-3,
-        threshold=0.5,
+        threshold='deprecated',  # now dynamic
         num_conv_layers=3,
         conv_channels=None,
         conv_kernel_sizes=None,
@@ -130,6 +130,7 @@ class SiaViT(pl.LightningModule):
 
         # Contrastive Loss
         self.criterion = ContrastiveLoss(margin=cl_margin)
+        self.dynamic_threshold = 0.5
 
     def _compute_feature_dim(self):
         # Function to compute the output size after convolution and pooling
@@ -226,17 +227,17 @@ class SiaViT(pl.LightningModule):
         val_loader_mixed = DataLoader(
             val_dataset_mixed, batch_size=self.hparams.batch_size, num_workers=0
         )
-        return [val_loader_similar, val_loader_dissimilar, val_loader_mixed]
+        return [val_loader_mixed, val_loader_similar, val_loader_dissimilar]
 
-    def validation_step(self, batch, batch_idx, dataloader_idx=2):
+    def validation_step(self, batch, batch_idx, dataloader_idx=0):
         (x1, x2), y = batch
         distance = self.forward(x1, x2)
         y = y.float()
         loss = self.criterion(distance, y)
         
-        if dataloader_idx == 2:
+        if dataloader_idx == 0:
             # Mixed pairs
-            thresholds = torch.linspace(0, 1, steps=100)  # Sample 100 thresholds from 0 to 1
+            thresholds = torch.linspace(0, 1, steps=1001)
             accuracies = []
 
             for threshold in thresholds:
@@ -249,21 +250,22 @@ class SiaViT(pl.LightningModule):
             optimal_threshold = thresholds[max_idx].item()
             val_acc_mixed = accuracies[max_idx].item()
 
-            preds = (distance < optimal_threshold).long()  # Recompute preds with optimal threshold
             acc = val_acc_mixed
 
             self.log('val_loss_mixed', loss, on_step=False, on_epoch=True, prog_bar=True, add_dataloader_idx=False)
             self.log('val_acc_mixed', val_acc_mixed, on_step=False, on_epoch=True, prog_bar=True, add_dataloader_idx=False)
             self.log('optimal_threshold', optimal_threshold, on_step=False, on_epoch=True, prog_bar=True, add_dataloader_idx=False)
+
+            self.dynamic_threshold = optimal_threshold
         else:
-            preds = (distance < self.hparams.threshold).long()
+            preds = (distance < self.dynamic_threshold).long()
             acc = (preds == y.long()).float().mean()
 
-            if dataloader_idx == 0:
+            if dataloader_idx == 1:
                 # Similar pairs
                 self.log('val_loss_similar', loss, on_step=False, on_epoch=True, prog_bar=True, add_dataloader_idx=False)
                 self.log('val_acc_similar', acc, on_step=False, on_epoch=True, prog_bar=True, add_dataloader_idx=False)
-            elif dataloader_idx == 1:
+            elif dataloader_idx == 2:
                 # Dissimilar pairs
                 self.log('val_loss_dissimilar', loss, on_step=False, on_epoch=True, prog_bar=True, add_dataloader_idx=False)
                 self.log('val_acc_dissimilar', acc, on_step=False, on_epoch=True, prog_bar=True, add_dataloader_idx=False)
