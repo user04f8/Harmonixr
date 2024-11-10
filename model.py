@@ -236,8 +236,6 @@ class SiaViT(pl.LightningModule):
         return [threshold_optim_dataloader_mixed, val_loader_mixed, val_loader_similar, val_loader_dissimilar]
 
     def validation_step(self, batch, batch_idx, dataloader_idx=0):
-        print(self.optimizer)
-
         (x1, x2), y = batch
         distance = self.forward(x1, x2)
         y = y.float()
