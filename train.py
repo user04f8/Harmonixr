@@ -11,9 +11,9 @@ TICKS_PER_MINUTE = 20 * 60
 hparams = {
     'embedding_dim': 512,
     'data_dir': './data',
-    't': 1 * TICKS_PER_MINUTE // 4,
+    't': 1 * TICKS_PER_MINUTE // 2,
     'o': 6, 
-    'batch_size': 400,
+    'batch_size': 200,
     'lr': 2e-5,
     'threshold': 0.2,
     'num_conv_layers': 4,
@@ -60,7 +60,7 @@ if __name__ == '__main__':
     model = SiaViT(**hparams)
 
     # Set up logger
-    logger = TensorBoardLogger("tb_logs", name="mini-MIDIClassifier")
+    logger = TensorBoardLogger("tb_logs", name="SiaViT")
 
     # Define callbacks
     # early_stop_callback = EarlyStopping(
@@ -81,7 +81,7 @@ if __name__ == '__main__':
 
     # Initialize trainer
     trainer = pl.Trainer(
-        max_epochs=160,
+        max_epochs=500,
         logger=logger,
         callbacks=[checkpoint_callback],
         accelerator='gpu' if torch.cuda.is_available() else 'cpu',

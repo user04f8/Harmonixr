@@ -66,7 +66,7 @@ class MIDIDataset(Dataset):
         random.seed(random_state + hash(self.pair_type))  # Set seed for reproducibility
         pairs = []
         pair_labels = []
-        MAX_PAIRS = 100
+        MAX_PAIRS = 500
 
         if self.pair_type == 'similar':
             max_pairs_per_composer = MAX_PAIRS
