@@ -314,7 +314,7 @@ class SiaViT(pl.LightningModule):
             self.criterion = DynamicContrastiveLoss(initial_margin=cl_margin)
         else:
             self.criterion = ContrastiveLoss(margin=cl_margin)
-        self.dynamic_threshold = 0.5
+        self.dynamic_threshold = 0.05
 
     def _compute_feature_dim(self):
         """
