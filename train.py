@@ -11,10 +11,10 @@ TICKS_PER_MINUTE = 20 * 60
 hparams = {
     'embedding_dim': 512,
     'data_dir': './data',
-    't': 1 * TICKS_PER_MINUTE // 2,
+    't': 1 * TICKS_PER_MINUTE,
     'o': 6, 
-    'batch_size': 200,
-    'lr': 2e-5,
+    'batch_size': 100,
+    'lr': 1e-5,
     'threshold': 0.2,
     'num_conv_layers': 4,
     'conv_channels': [32, 64, 128, 256],
