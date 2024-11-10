@@ -2,32 +2,32 @@ import torch
 import pytorch_lightning as pl
 from pytorch_lightning.callbacks import EarlyStopping, ModelCheckpoint
 from pytorch_lightning.loggers import TensorBoardLogger
-from model import MIDIClassifier
+from model import SiaViT
 
 torch.set_float32_matmul_precision('high')
 
 TICKS_PER_MINUTE = 20 * 60
 
 hparams = {
-    'embedding_dim': 256,
+    'embedding_dim': 512,
     'data_dir': './data',
     't': 1 * TICKS_PER_MINUTE,
     'o': 6, 
     'batch_size': 4 * 26,
-    'lr': 5e-6,
+    'lr': 2e-5,
     'threshold': 0.2,
     'num_conv_layers': 4,
     'conv_channels': [32, 64, 128, 256],
-    'conv_kernel_sizes': [(7,3,5), (5,3,5), (3,3,3), (3,3,3)],
+    'conv_kernel_sizes': [(9,3,9), (5,3,5), (3,3,3), (3,3,3)],
     'conv_strides': [(1,1,2), (1,1,2), (1,1,2), (1,1,2)],
-    'conv_paddings': [(2,1,2), (2,1,2), (1,1,1), (1,1,1)],
-    'dropout_rates': [0.2, 0.2, 0.2, 0.2],
+    'conv_paddings': [(4,1,4), (2,1,2), (1,1,1), (1,1,1)],
+    'dropout_rates': [0.4, 0.3, 0.2, 0.2],
     'maxpool_kernel_sizes': [(1,1,2), (1,1,2), (1,1,2), (1,1,2)],
-    'transformer_d_model': 256,
+    'transformer_d_model': 512,
     'transformer_nhead': 8,
     'transformer_num_layers': 4,
-    'fc_hidden_dims': [512, 256],
-    'weight_decay': 1e-5,
+    'fc_hidden_dims': [1024, 512],
+    'weight_decay': 5e-6,
     'use_AdamW': True
 }
 
@@ -57,26 +57,26 @@ if __name__ == '__main__':
     # }
 
     # Instantiate the model
-    model = MIDIClassifier(**hparams)
+    model = SiaViT(**hparams)
 
     # Set up logger
     logger = TensorBoardLogger("tb_logs", name="BIG-MIDIClassifier")
 
     # Define callbacks
-    early_stop_callback = EarlyStopping(
-        monitor='val_acc',
-        min_delta=0.00,
-        patience=5,
-        verbose=True,
-        mode='max'
-    )
+    # early_stop_callback = EarlyStopping(
+    #     monitor='val_acc',
+    #     min_delta=0.00,
+    #     patience=5,
+    #     verbose=True,
+    #     mode='max'
+    # )
 
     checkpoint_callback = ModelCheckpoint(
-        monitor='val_acc_mixed',  # Monitor the combined validation accuracy
-        filename='{epoch:02d}-{val_acc_mixed:.2f}',
+        monitor='val_loss_mixed',
+        filename='{epoch:02d}-{val_loss_mixed:.2f}',
         save_top_k=3,
         save_last=True,
-        mode='max',
+        mode='min',
     )
 
     # Initialize trainer

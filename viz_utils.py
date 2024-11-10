@@ -13,8 +13,8 @@ import warnings
 import random
 
 def load_model(ckpt_path, device=None):
-    from model import MIDIClassifier
-    model = MIDIClassifier.load_from_checkpoint(ckpt_path)
+    from model import SiaViT
+    model = SiaViT.load_from_checkpoint(ckpt_path)
     model.eval()
     if device is None:
         device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')

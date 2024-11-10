@@ -26,7 +26,7 @@ class WraparoundConv3D(nn.Module):
         x = torch.cat([pad_front, x, pad_back], dim=pitch_dim)
         return self.conv(x)
 
-class MIDIClassifier(pl.LightningModule):
+class SiaViT(pl.LightningModule):
     def __init__(
         self,
         embedding_dim=500,
@@ -51,7 +51,7 @@ class MIDIClassifier(pl.LightningModule):
         use_AdamW=True,
         cl_margin=1.0
     ):
-        super(MIDIClassifier, self).__init__()
+        super(SiaViT, self).__init__()
         self.save_hyperparameters()
         
         self.conv_layers_params = {
@@ -228,26 +228,47 @@ class MIDIClassifier(pl.LightningModule):
         )
         return [val_loader_similar, val_loader_dissimilar, val_loader_mixed]
 
-    def validation_step(self, batch, batch_idx, dataloader_idx=0):
+    def validation_step(self, batch, batch_idx, dataloader_idx=2):
         (x1, x2), y = batch
         distance = self.forward(x1, x2)
         y = y.float()
         loss = self.criterion(distance, y)
-        preds = (distance < self.hparams.threshold).long()
-        acc = (preds == y.long()).float().mean()
-
-        if dataloader_idx == 0:
-            # Similar pairs
-            self.log('val_loss_similar', loss, on_step=False, on_epoch=True, prog_bar=True, add_dataloader_idx=False)
-            self.log('val_acc_similar', acc, on_step=False, on_epoch=True, prog_bar=True, add_dataloader_idx=False)
-        elif dataloader_idx == 1:
-            # Dissimilar pairs
-            self.log('val_loss_dissimilar', loss, on_step=False, on_epoch=True, prog_bar=True, add_dataloader_idx=False)
-            self.log('val_acc_dissimilar', acc, on_step=False, on_epoch=True, prog_bar=True, add_dataloader_idx=False)
-        else:
+        
+        if dataloader_idx == 2:
             # Mixed pairs
+            thresholds = torch.linspace(0, 1, steps=100)  # Sample 100 thresholds from 0 to 1
+            accuracies = []
+
+            for threshold in thresholds:
+                preds = (distance < threshold).long()
+                acc = (preds == y.long()).float().mean()
+                accuracies.append(acc.item())
+
+            accuracies = torch.tensor(accuracies)
+            max_idx = torch.argmax(accuracies)
+            optimal_threshold = thresholds[max_idx].item()
+            val_acc_mixed = accuracies[max_idx].item()
+
+            preds = (distance < optimal_threshold).long()  # Recompute preds with optimal threshold
+            acc = val_acc_mixed
+
             self.log('val_loss_mixed', loss, on_step=False, on_epoch=True, prog_bar=True, add_dataloader_idx=False)
-            self.log('val_acc_mixed', acc, on_step=False, on_epoch=True, prog_bar=True, add_dataloader_idx=False)
+            self.log('val_acc_mixed', val_acc_mixed, on_step=False, on_epoch=True, prog_bar=True, add_dataloader_idx=False)
+            self.log('optimal_threshold', optimal_threshold, on_step=False, on_epoch=True, prog_bar=True, add_dataloader_idx=False)
+        else:
+            preds = (distance < self.hparams.threshold).long()
+            acc = (preds == y.long()).float().mean()
+
+            if dataloader_idx == 0:
+                # Similar pairs
+                self.log('val_loss_similar', loss, on_step=False, on_epoch=True, prog_bar=True, add_dataloader_idx=False)
+                self.log('val_acc_similar', acc, on_step=False, on_epoch=True, prog_bar=True, add_dataloader_idx=False)
+            elif dataloader_idx == 1:
+                # Dissimilar pairs
+                self.log('val_loss_dissimilar', loss, on_step=False, on_epoch=True, prog_bar=True, add_dataloader_idx=False)
+                self.log('val_acc_dissimilar', acc, on_step=False, on_epoch=True, prog_bar=True, add_dataloader_idx=False)
+            else:
+                raise AssertionError("dataloader_idx out of bounds")
 
         return {'val_loss': loss, 'val_acc': acc}
     
@@ -263,23 +284,46 @@ class MIDIClassifier(pl.LightningModule):
                 self.parameters(),
                 lr=self.hparams.lr
             )
-        # Total number of training steps
+
+        num_epochs = self.trainer.max_epochs
         num_training_steps = self.trainer.estimated_stepping_batches
-        # Number of warmup steps
-        num_warmup_steps = int(0.1 * num_training_steps)  # 10% of total steps
-        # Define the lambda function for linear warmup
-        def lr_lambda(current_step):
-            if current_step < num_warmup_steps:
-                return float(current_step) / float(max(1, num_warmup_steps))
-            return max(
-                0.0, float(num_training_steps - current_step) / float(max(1, num_training_steps - num_warmup_steps))
-            )
-        scheduler = {
-            'scheduler': torch.optim.lr_scheduler.LambdaLR(optimizer, lr_lambda),
+
+        warmup_steps = int(num_training_steps * (5 / num_epochs))
+        anneal_start_epoch = max(0, num_epochs - 10)
+        anneal_start_steps = int(num_training_steps * (anneal_start_epoch / num_epochs))
+        anneal_steps = num_training_steps - anneal_start_steps
+
+        warmup_scheduler = {
+            'scheduler': torch.optim.lr_scheduler.LinearLR(
+                optimizer, start_factor=1e-6, end_factor=1.0, total_iters=warmup_steps
+            ),
             'interval': 'step',
             'frequency': 1
         }
-        return [optimizer], [scheduler]
+
+        plateau_scheduler = {
+            'scheduler': torch.optim.lr_scheduler.ReduceLROnPlateau(
+                optimizer,
+                mode='min',
+                factor=0.1,
+                patience=3,
+                verbose=True
+            ),
+            'monitor': 'val_loss_mixed',
+            'interval': 'epoch',
+            'frequency': 1
+        }
+
+        annealing_scheduler = {
+            'scheduler': torch.optim.lr_scheduler.LinearLR(
+                optimizer, start_factor=1.0, end_factor=0.0, total_iters=anneal_steps
+            ),
+            'interval': 'step',
+            'frequency': 1
+        }
+
+        schedulers = [warmup_scheduler, plateau_scheduler, annealing_scheduler]
+        return [optimizer], schedulers
 
 class ContrastiveLoss(nn.Module):
     def __init__(self, margin=1.0):
