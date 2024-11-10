@@ -196,6 +196,7 @@ def plot_distance_histogram(embeddings, labels, num_pairs=1000):
     """
     distances = []
     pair_labels = []
+    MAX_DIST = 0.2
 
     # Build composer indices
     composer_indices = {}
@@ -221,7 +222,7 @@ def plot_distance_histogram(embeddings, labels, num_pairs=1000):
         emb1 = embeddings[idx1]
         emb2 = embeddings[idx2]
         distance = np.linalg.norm(emb1 - emb2)
-        distances.append(distance)
+        distances.append(min(distance, MAX_DIST))
         pair_labels.append('Similar' if same == 1 else 'Dissimilar')
 
     df_hist = pd.DataFrame({
@@ -234,7 +235,7 @@ def plot_distance_histogram(embeddings, labels, num_pairs=1000):
         '#EF553B'   # dissimilar: red
     ]
 
-    fig = px.histogram(df_hist, x='Distance', color='Pair Type', range_x=[0, 1], nbins=1001, barmode='overlay',
+    fig = px.histogram(df_hist, x='Distance', color='Pair Type', range_x=[0, MAX_DIST], nbins=101, barmode='overlay',
                        histnorm='density', opacity=0.6, color_discrete_sequence=color_sequence)
     fig.update_layout(title='Histogram of Pair Distances',
                       xaxis_title='Euclidean Distance between Embeddings',
