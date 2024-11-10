@@ -16,7 +16,7 @@ if __name__ == '__main__':
         data_dir='./data',
         t=TICKS_PER_MINUTE,
         o=6,
-        batch_size=64,
+        batch_size=128,
         lr=1e-5,
         num_conv_layers=3,
         conv_channels=[16, 32, 64],
@@ -32,6 +32,7 @@ if __name__ == '__main__':
         weight_decay=1e-5,
         use_AdamW=True,
         cl_margin=1.0,
+        cl_margin_dynamic=True,
         warmup_proportion=0.1,
         wraparound_layers=[True, False, False]
     )
