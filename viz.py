@@ -17,7 +17,7 @@ def main():
 
     visualize_tsne(embeddings, composer_names)
 
-    plot_distance_histogram(embeddings, labels, num_pairs=10000)
+    plot_distance_histogram(embeddings, labels, num_pairs=50000)
 
     plot_roc_curve(embeddings, labels)
 
