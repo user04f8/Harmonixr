@@ -52,7 +52,7 @@ class WraparoundConv3D(nn.Module):
 
     def forward(self, x):
         if self.use_wraparound:
-            # Apply wraparound padding on pitch (dim 2) and optionally octave (dim 3)
+            # Apply wraparound padding on pitch dimension (dim=2)
             pad_front = x[:, :, -1:, :, :].clone()
             pad_back = x[:, :, :1, :, :].clone()
             x = torch.cat([pad_front, x, pad_back], dim=2)
@@ -62,32 +62,59 @@ class WraparoundConv3D(nn.Module):
 class ResidualConv3D(nn.Module):
     def __init__(self, in_channels, out_channels, kernel_size, stride=1, padding=0, use_wraparound=False):
         super(ResidualConv3D, self).__init__()
-        self.conv1 = WraparoundConv3D(in_channels, out_channels, kernel_size, stride, padding, use_wraparound)
+        self.use_wraparound = use_wraparound
+
+        # Main Path
+        self.conv1 = WraparoundConv3D(
+            in_channels, out_channels, kernel_size,
+            stride=stride, padding=padding,
+            use_wraparound=use_wraparound
+        )
         self.bn1 = nn.BatchNorm3d(out_channels)
         self.relu = nn.ReLU()
-        self.conv2 = WraparoundConv3D(out_channels, out_channels, kernel_size, stride=1, padding=padding, use_wraparound=use_wraparound)
+        self.conv2 = WraparoundConv3D(
+            out_channels, out_channels, kernel_size,
+            stride=1, padding=padding,
+            use_wraparound=use_wraparound
+        )
         self.bn2 = nn.BatchNorm3d(out_channels)
-        
+
+        # Residual Path
         if in_channels != out_channels or stride != 1:
-            self.residual = nn.Sequential(
-                nn.Conv3d(in_channels, out_channels, kernel_size=1, stride=stride),
-                nn.BatchNorm3d(out_channels)
-            )
+            if self.use_wraparound:
+                self.residual = nn.Sequential(
+                    WraparoundConv3D(
+                        in_channels, out_channels, kernel_size=1,
+                        stride=stride, padding=0,
+                        use_wraparound=True  # Apply wraparound in residual
+                    ),
+                    nn.BatchNorm3d(out_channels)
+                )
+            else:
+                self.residual = nn.Sequential(
+                    nn.Conv3d(in_channels, out_channels, kernel_size=1, stride=stride, padding=0),
+                    nn.BatchNorm3d(out_channels)
+                )
         else:
             self.residual = nn.Identity()
-        
+
+        # Initialize weights
         nn.init.kaiming_normal_(self.conv1.conv.weight, mode='fan_out', nonlinearity='relu')
         nn.init.kaiming_normal_(self.conv2.conv.weight, mode='fan_out', nonlinearity='relu')
 
     def forward(self, x):
         identity = self.residual(x)
+
         out = self.conv1(x)
         out = self.bn1(out)
         out = self.relu(out)
+
         out = self.conv2(out)
         out = self.bn2(out)
+
         out += identity
         out = self.relu(out)
+
         return out
 
 
