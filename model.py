@@ -476,14 +476,14 @@ class SiaViT(pl.LightningModule):
 
             # Log metrics
             if dataloader_idx == 1:
-                self.log('val_loss_mixed', loss, on_epoch=True, prog_bar=True)
-                self.log('val_acc_mixed', acc, on_epoch=True, prog_bar=True)
+                self.log('val_loss_mixed', loss, on_epoch=True, prog_bar=True, add_dataloader_idx=False)
+                self.log('val_acc_mixed', acc, on_epoch=True, prog_bar=True, add_dataloader_idx=False)
             elif dataloader_idx == 2:
-                self.log('val_loss_similar', loss, on_epoch=True)
-                self.log('val_acc_similar', acc, on_epoch=True)
+                self.log('val_loss_similar', loss, on_epoch=True, add_dataloader_idx=False)
+                self.log('val_acc_similar', acc, on_epoch=True, add_dataloader_idx=False)
             elif dataloader_idx == 3:
-                self.log('val_loss_dissimilar', loss, on_epoch=True)
-                self.log('val_acc_dissimilar', acc, on_epoch=True)
+                self.log('val_loss_dissimilar', loss, on_epoch=True, add_dataloader_idx=False)
+                self.log('val_acc_dissimilar', acc, on_epoch=True, add_dataloader_idx=False)
             else:
                 raise AssertionError("dataloader_idx out of bounds")
 
