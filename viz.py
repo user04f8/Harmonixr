@@ -3,7 +3,7 @@ import torch
 
 def main():
     print("Loading model")
-    checkpoint_path = r'tb_logs/BIG-MIDIClassifier/version_15/checkpoints/last.ckpt'
+    checkpoint_path = r'tb_logs/SiaViT/version_26/checkpoints/last.ckpt'
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     model = load_model(checkpoint_path, device=device)
 
