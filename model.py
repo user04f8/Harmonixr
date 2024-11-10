@@ -13,6 +13,14 @@ NUM_WORKERS_PER_DATALOADER = 0
 def get_cosine_schedule_with_warmup(optimizer, num_warmup_steps, num_training_steps, eta_min=0, last_epoch=-1):
     """
     Create a learning rate scheduler with a warmup phase followed by a cosine decay.
+    Args:
+        optimizer (Optimizer): Wrapped optimizer.
+        num_warmup_steps (int): Number of warmup steps.
+        num_training_steps (int): Total number of training steps.
+        eta_min (float): Minimum learning rate after decay.
+        last_epoch (int): The index of the last epoch.
+    Returns:
+        LambdaLR: Learning rate scheduler.
     """
     def lr_lambda(current_step):
         if current_step < num_warmup_steps:
@@ -47,7 +55,7 @@ class WraparoundConv3D(nn.Module):
 
 class ResidualConv3D(nn.Module):
     """
-    A residual 3D convolutional block with optional wraparound padding.
+    A residual 3D convolutional block with "skip" connections.
     """
     def __init__(self, in_channels, out_channels, kernel_size, stride=1, padding=0, use_wraparound=False):
         super(ResidualConv3D, self).__init__()
@@ -171,7 +179,31 @@ class DynamicContrastiveLoss(nn.Module):
 
 class SiaViT(pl.LightningModule):
     """
-    Siamese Network with Vision Transformer for MIDI data.
+    Siamese Vision Transformer (SiaViT) model to classify pairs of multidimensional time-series data.
+
+    Args:
+        embedding_dim (int): Dimension of the output embeddings.
+        data_dir (str): Directory containing the data.
+        t (int): Number of time steps.
+        o (int): Number of octaves.
+        batch_size (int): Batch size for training.
+        lr (float): Learning rate.
+        num_conv_layers (int): Number of convolutional layers.
+        conv_channels (list of int): Number of channels for each conv layer.
+        conv_kernel_sizes (list of tuple): Kernel sizes for each conv layer.
+        conv_strides (list of tuple): Strides for each conv layer.
+        conv_paddings (list of tuple): Paddings for each conv layer.
+        dropout_rates (list of float): Dropout rates for each conv layer.
+        maxpool_kernel_sizes (list of tuple): Max pooling kernel sizes for each conv layer.
+        transformer_d_model (int): Dimension of the transformer model.
+        transformer_nhead (int): Number of heads in the transformer.
+        transformer_num_layers (int): Number of transformer layers.
+        fc_hidden_dims (list of int): Hidden dimensions for the fully connected layers.
+        weight_decay (float): Weight decay for the optimizer.
+        use_AdamW (bool): Whether to use AdamW optimizer.
+        cl_margin (float): Margin for the contrastive loss.
+        warmup_proportion (float): Proportion of warmup steps for the scheduler.
+        wraparound_layers (list of bool): Whether to use wraparound padding for each conv layer.
     """
     def __init__(
         self,
