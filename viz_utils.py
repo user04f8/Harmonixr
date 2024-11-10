@@ -196,7 +196,7 @@ def plot_distance_histogram(embeddings, labels, num_pairs=1000):
     """
     distances = []
     pair_labels = []
-    MAX_DIST = 0.1
+    MAX_DIST = 1.0
 
     # Build composer indices
     composer_indices = {}
@@ -235,7 +235,7 @@ def plot_distance_histogram(embeddings, labels, num_pairs=1000):
         '#EF553B'   # dissimilar: red
     ]
 
-    fig = px.histogram(df_hist, x='Distance', color='Pair Type', range_x=[0, MAX_DIST], nbins=101, barmode='overlay',
+    fig = px.histogram(df_hist, x='Distance', color='Pair Type', nbins=101, barmode='overlay',
                        histnorm='density', opacity=0.6, color_discrete_sequence=color_sequence)
     fig.update_layout(title='Histogram of Pair Distances',
                       xaxis_title='Euclidean Distance between Embeddings',
