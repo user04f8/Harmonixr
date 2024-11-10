@@ -29,7 +29,7 @@ if __name__ == '__main__':
         transformer_nhead=8,
         transformer_num_layers=3,
         fc_hidden_dims=[128],
-        weight_decay=1e-5,
+        weight_decay=0,
         use_AdamW=True,
         cl_margin=1.0,
         cl_margin_dynamic=True,

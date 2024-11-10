@@ -1,6 +1,7 @@
 import math
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 import pytorch_lightning as pl
 from torch.utils.data import DataLoader
 from einops import rearrange
@@ -12,16 +13,6 @@ NUM_WORKERS_PER_DATALOADER = 0
 def get_cosine_schedule_with_warmup(optimizer, num_warmup_steps, num_training_steps, eta_min=0, last_epoch=-1):
     """
     Create a learning rate scheduler with a warmup phase followed by a cosine decay.
-
-    Args:
-        optimizer (Optimizer): Wrapped optimizer.
-        num_warmup_steps (int): Number of warmup steps.
-        num_training_steps (int): Total number of training steps.
-        eta_min (float): Minimum learning rate after decay.
-        last_epoch (int): The index of the last epoch.
-
-    Returns:
-        LambdaLR: Learning rate scheduler.
     """
     def lr_lambda(current_step):
         if current_step < num_warmup_steps:
@@ -56,7 +47,7 @@ class WraparoundConv3D(nn.Module):
 
 class ResidualConv3D(nn.Module):
     """
-    A conv layer with residual "skip" connections
+    A residual 3D convolutional block with optional wraparound padding.
     """
     def __init__(self, in_channels, out_channels, kernel_size, stride=1, padding=0, use_wraparound=False):
         super(ResidualConv3D, self).__init__()
@@ -112,10 +103,11 @@ class ContrastiveLoss(nn.Module):
         super(ContrastiveLoss, self).__init__()
         self.margin = margin
 
-    def forward(self, distance, label):
+    def forward(self, distance, label, update_margin='unused'):
         loss = (label) * 0.5 * distance.pow(2) + \
                (1 - label) * 0.5 * torch.clamp(self.margin - distance, min=0.0).pow(2)
         return loss.mean()
+
 
 class DynamicContrastiveLoss(nn.Module):
     """
@@ -129,48 +121,48 @@ class DynamicContrastiveLoss(nn.Module):
         self.register_buffer('avg_dissimilar_distance', torch.tensor(0.0))
         self.initialized = False
 
-    def forward(self, distance, label):
+    def forward(self, distance, label, update_margin=True):
         """
         Computes the loss and updates the dynamic margin.
 
         Args:
             distance (Tensor): Tensor of distances between embeddings.
             label (Tensor): Tensor of labels indicating similar (1) or dissimilar (0) pairs.
-
+            update_margin (bool): Whether to update the margin (should be False during validation).
         Returns:
             Tensor: Loss value.
         """
-        with torch.no_grad():
-            # Compute average distances for similar and dissimilar pairs
-            similar_mask = label == 1
-            dissimilar_mask = label == 0
+        if update_margin and self.training:
+            with torch.no_grad():
+                # Compute average distances for similar and dissimilar pairs
+                similar_mask = label == 1
+                dissimilar_mask = label == 0
 
-            if similar_mask.any():
-                mean_similar_distance = distance[similar_mask].mean()
-            else:
-                mean_similar_distance = self.avg_similar_distance
+                if similar_mask.any():
+                    mean_similar_distance = distance[similar_mask].mean()
+                else:
+                    mean_similar_distance = self.avg_similar_distance
 
-            if dissimilar_mask.any():
-                mean_dissimilar_distance = distance[dissimilar_mask].mean()
-            else:
-                mean_dissimilar_distance = self.avg_dissimilar_distance
+                if dissimilar_mask.any():
+                    mean_dissimilar_distance = distance[dissimilar_mask].mean()
+                else:
+                    mean_dissimilar_distance = self.avg_dissimilar_distance
 
-            # Initialize running averages if not already done
-            if not self.initialized:
-                self.avg_similar_distance = mean_similar_distance
-                self.avg_dissimilar_distance = mean_dissimilar_distance
-                self.initialized = True
-            else:
-                # Update running averages
-                self.avg_similar_distance = self.momentum * self.avg_similar_distance + \
-                                            (1 - self.momentum) * mean_similar_distance
-                self.avg_dissimilar_distance = self.momentum * self.avg_dissimilar_distance + \
-                                               (1 - self.momentum) * mean_dissimilar_distance
+                # Initialize running averages if not already done
+                if not self.initialized:
+                    self.avg_similar_distance = mean_similar_distance
+                    self.avg_dissimilar_distance = mean_dissimilar_distance
+                    self.initialized = True
+                else:
+                    # Update running averages
+                    self.avg_similar_distance = self.momentum * self.avg_similar_distance + \
+                                                (1 - self.momentum) * mean_similar_distance
+                    self.avg_dissimilar_distance = self.momentum * self.avg_dissimilar_distance + \
+                                                   (1 - self.momentum) * mean_dissimilar_distance
 
-            # Update margin based on the difference between averages
-            # Add a small constant to prevent margin from becoming too small
-            self.margin = max(0.1, self.avg_dissimilar_distance - self.avg_similar_distance)
-
+                # Update margin based on the difference between averages
+                # Add a small constant to prevent margin from becoming too small
+                self.margin = max(0.1, self.avg_dissimilar_distance - self.avg_similar_distance)
         # Compute contrastive loss with the dynamic margin
         loss = (label) * 0.5 * distance.pow(2) + \
                (1 - label) * 0.5 * torch.clamp(self.margin - distance, min=0.0).pow(2)
@@ -180,30 +172,6 @@ class DynamicContrastiveLoss(nn.Module):
 class SiaViT(pl.LightningModule):
     """
     Siamese Network with Vision Transformer for MIDI data.
-
-    Args:
-        embedding_dim (int): Dimension of the output embeddings.
-        data_dir (str): Directory containing the data.
-        t (int): Number of time steps.
-        o (int): Number of octaves.
-        batch_size (int): Batch size for training.
-        lr (float): Learning rate.
-        num_conv_layers (int): Number of convolutional layers.
-        conv_channels (list of int): Number of channels for each conv layer.
-        conv_kernel_sizes (list of tuple): Kernel sizes for each conv layer.
-        conv_strides (list of tuple): Strides for each conv layer.
-        conv_paddings (list of tuple): Paddings for each conv layer.
-        dropout_rates (list of float): Dropout rates for each conv layer.
-        maxpool_kernel_sizes (list of tuple): Max pooling kernel sizes for each conv layer.
-        transformer_d_model (int): Dimension of the transformer model.
-        transformer_nhead (int): Number of heads in the transformer.
-        transformer_num_layers (int): Number of transformer layers.
-        fc_hidden_dims (list of int): Hidden dimensions for the fully connected layers.
-        weight_decay (float): Weight decay for the optimizer.
-        use_AdamW (bool): Whether to use AdamW optimizer.
-        cl_margin (float): Margin for the contrastive loss.
-        warmup_proportion (float): Proportion of warmup steps for the scheduler.
-        wraparound_layers (list of bool): Whether to use wraparound padding for each conv layer.
     """
     def __init__(
         self,
@@ -213,7 +181,6 @@ class SiaViT(pl.LightningModule):
         o=6,
         batch_size=32,
         lr=1e-3,
-        threshold='deprecated',  # now dynamic
         num_conv_layers=3,
         conv_channels=None,
         conv_kernel_sizes=None,
@@ -227,11 +194,8 @@ class SiaViT(pl.LightningModule):
         fc_hidden_dims=None,
         weight_decay=1e-5,
         use_AdamW=True,
-        cl_margin=1.0,
-        cl_margin_dynamic=True,
         warmup_proportion=0.1,
         wraparound_layers=None
-        
     ):
         super(SiaViT, self).__init__()
         self.save_hyperparameters()
@@ -309,12 +273,9 @@ class SiaViT(pl.LightningModule):
             if isinstance(layer, nn.Linear):
                 nn.init.xavier_uniform_(layer.weight)
 
-        # Contrastive Loss
-        if cl_margin_dynamic:
-            self.criterion = DynamicContrastiveLoss(initial_margin=cl_margin)
-        else:
-            self.criterion = ContrastiveLoss(margin=cl_margin)
-        self.dynamic_threshold = 0.05
+        # Dynamic Contrastive Loss
+        self.criterion = DynamicContrastiveLoss(initial_margin=1.0, momentum=0.9)
+        self.dynamic_threshold = 0.5  # Initialize dynamic threshold
 
     def _compute_feature_dim(self):
         """
@@ -348,8 +309,7 @@ class SiaViT(pl.LightningModule):
             t_size = compute_output_size(t_size, kernel_t, stride_t, padding_t)
 
             # MaxPool parameters
-            pool_size = self.hparams.maxpool_kernel_sizes[i]
-            pool_p, pool_o, pool_t = pool_size
+            pool_p, pool_o, pool_t = self.hparams.maxpool_kernel_sizes[i]
 
             # Compute output sizes after pooling
             p_size = p_size // pool_p
@@ -365,12 +325,6 @@ class SiaViT(pl.LightningModule):
     def forward_one(self, x):
         """
         Forward pass for one input in the siamese network.
-
-        Args:
-            x (Tensor): Input tensor of shape (batch_size, 12, o, t).
-
-        Returns:
-            Tensor: Normalized embedding of the input.
         """
         x = x.unsqueeze(1)  # (batch_size, 1, 12, o, t)
         x = self.conv(x)
@@ -394,26 +348,12 @@ class SiaViT(pl.LightningModule):
     def compute_distance(self, emb1, emb2):
         """
         Computes the Euclidean distance between two embeddings.
-
-        Args:
-            emb1 (Tensor): First embedding.
-            emb2 (Tensor): Second embedding.
-
-        Returns:
-            Tensor: Distance between embeddings.
         """
         return torch.norm(emb1 - emb2, p=2, dim=1)
 
     def forward(self, x1, x2):
         """
         Forward pass for the siamese network.
-
-        Args:
-            x1 (Tensor): First input tensor.
-            x2 (Tensor): Second input tensor.
-
-        Returns:
-            Tensor: Distance between the embeddings of the inputs.
         """
         emb1 = self.forward_one(x1)
         emb2 = self.forward_one(x2)
@@ -429,19 +369,14 @@ class SiaViT(pl.LightningModule):
     def training_step(self, batch, batch_idx):
         """
         Training step.
-
-        Args:
-            batch: Batch data.
-            batch_idx: Batch index.
-
-        Returns:
-            Tensor: Loss value.
         """
         (x1, x2), y = batch
         distance = self.forward(x1, x2)
         y = y.float()
-        loss = self.criterion(distance, y)
+        loss = self.criterion(distance, y, update_margin=True)
         self.log('train_loss', loss, on_step=True, on_epoch=True, prog_bar=True)
+        # Log the current margin
+        self.log('current_margin', self.criterion.margin, on_step=True, on_epoch=True, prog_bar=True)
         return loss
 
     def val_dataloader(self):
@@ -479,95 +414,83 @@ class SiaViT(pl.LightningModule):
             val_loader_dissimilar
         ]
 
+    def on_validation_epoch_start(self):
+        """
+        Initializes buffers for collecting validation outputs.
+        """
+        self.distances = []
+        self.labels = []
+
     def validation_step(self, batch, batch_idx, dataloader_idx=0):
         """
         Validation step.
-
-        Args:
-            batch: Batch data.
-            batch_idx: Batch index.
-            dataloader_idx: Index of the dataloader.
-
-        Returns:
-            dict: Dictionary containing loss and accuracy.
         """
         (x1, x2), y = batch
         distance = self.forward(x1, x2)
         y = y.float()
-        loss = self.criterion(distance, y)
-        
-        if dataloader_idx == 0:  # threshold_optim_dataloader_mixed
-            thresholds = torch.linspace(0, 1, steps=1001).to(self.device)
-            accuracies = []
-            for threshold in thresholds:
-                preds = (distance < threshold).long()
-                acc = (preds == y.long()).float().mean()
-                accuracies.append(acc.item())
-            accuracies = torch.tensor(accuracies).to(self.device)
-            max_idx = torch.argmax(accuracies)
-            optimal_threshold = thresholds[max_idx].item()
-            acc = accuracies[max_idx].item()
+
+        if dataloader_idx == 0:
+            # Collect distances and labels for threshold optimization
+            self.distances.append(distance.detach())
+            self.labels.append(y.detach())
         else:
+            loss = self.criterion(distance, y, update_margin=False)
             preds = (distance < self.dynamic_threshold).long()
             acc = (preds == y.long()).float().mean()
 
-        if dataloader_idx == 0:
-            self.log(
-                'psuedoval_loss_mixed', loss, 
-                on_step=False, on_epoch=True, prog_bar=False, 
-                add_dataloader_idx=False
-            )
-            self.log(
-                'psuedoval_acc_mixed', acc, 
-                on_step=False, on_epoch=True, prog_bar=True, 
-                add_dataloader_idx=False
-            )
-            self.log(
-                'optimal_threshold', optimal_threshold, 
-                on_step=False, on_epoch=True, prog_bar=True, 
-                add_dataloader_idx=False
-            )
+            # Log metrics
+            if dataloader_idx == 1:
+                self.log('val_loss_mixed', loss, on_epoch=True, prog_bar=True)
+                self.log('val_acc_mixed', acc, on_epoch=True, prog_bar=True)
+            elif dataloader_idx == 2:
+                self.log('val_loss_similar', loss, on_epoch=True)
+                self.log('val_acc_similar', acc, on_epoch=True)
+            elif dataloader_idx == 3:
+                self.log('val_loss_dissimilar', loss, on_epoch=True)
+                self.log('val_acc_dissimilar', acc, on_epoch=True)
+            else:
+                raise AssertionError("dataloader_idx out of bounds")
 
-            self.dynamic_threshold = optimal_threshold
-        elif dataloader_idx == 1:
-            self.log(
-                'val_loss_mixed', loss, 
-                on_step=False, on_epoch=True, prog_bar=True, 
-                add_dataloader_idx=False
-            )
-            self.log(
-                'val_acc_mixed', acc, 
-                on_step=False, on_epoch=True, prog_bar=True, 
-                add_dataloader_idx=False
-            )
-        elif dataloader_idx == 2:
-            # Similar pairs
-            self.log(
-                'val_loss_similar', loss, 
-                on_step=False, on_epoch=True, prog_bar=False, 
-                add_dataloader_idx=False
-            )
-            self.log(
-                'val_acc_similar', acc, 
-                on_step=False, on_epoch=True, prog_bar=True, 
-                add_dataloader_idx=False
-            )
-        elif dataloader_idx == 3:
-            # Dissimilar pairs
-            self.log(
-                'val_loss_dissimilar', loss, 
-                on_step=False, on_epoch=True, prog_bar=False, 
-                add_dataloader_idx=False
-            )
-            self.log(
-                'val_acc_dissimilar', acc, 
-                on_step=False, on_epoch=True, prog_bar=True, 
-                add_dataloader_idx=False
-            )
-        else:
-            raise AssertionError("dataloader_idx out of bounds")
+    def on_validation_epoch_end(self):
+        """
+        Called at the end of the validation epoch to aggregate results and update dynamic threshold.
+        """
+        # Concatenate distances and labels from all batches
+        distances = torch.cat(self.distances)
+        labels = torch.cat(self.labels)
 
-        return {'val_loss': loss, 'val_acc': acc}
+        # Gather distances and labels from all processes
+        gathered_distances = self.all_gather(distances)
+        gathered_labels = self.all_gather(labels)
+
+        # Reshape the gathered tensors
+        all_distances = gathered_distances.flatten()
+        all_labels = gathered_labels.flatten()
+
+        # Compute optimal threshold on the aggregated data
+        thresholds = torch.linspace(0, all_distances.max().item(), steps=1001, device=all_distances.device)
+        accuracies = []
+
+        for threshold in thresholds:
+            preds = (all_distances < threshold).long()
+            acc = (preds == all_labels.long()).float().mean()
+            accuracies.append(acc.item())
+
+        accuracies = torch.tensor(accuracies, device=all_distances.device)
+        max_idx = torch.argmax(accuracies)
+        optimal_threshold = thresholds[max_idx].item()
+        acc = accuracies[max_idx].item()
+
+        # Update dynamic threshold
+        self.dynamic_threshold = optimal_threshold
+
+        # Log the optimal threshold and accuracy
+        self.log('optimal_threshold', self.dynamic_threshold, on_epoch=True, prog_bar=True, sync_dist=True)
+        self.log('psuedoval_acc_mixed', acc, on_epoch=True, prog_bar=True, sync_dist=True)
+
+        # Clear the buffers
+        self.distances = []
+        self.labels = []
 
     def configure_optimizers(self):
         """
