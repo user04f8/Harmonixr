@@ -179,9 +179,9 @@ class DynamicContrastiveLoss(nn.Module):
 
 class SiaViT(pl.LightningModule):
     """
-    Siamese Vision Transformer (SiaViT) model to classify pairs of multidimensional time-series data.
+    Siamese Vision Transformer (SiaViT) to classify pairs of image-like data.
 
-    Args:
+        Args:
         embedding_dim (int): Dimension of the output embeddings.
         data_dir (str): Directory containing the data.
         t (int): Number of time steps.
@@ -226,6 +226,8 @@ class SiaViT(pl.LightningModule):
         fc_hidden_dims=None,
         weight_decay=1e-5,
         use_AdamW=True,
+        cl_margin=1.0,
+        cl_margin_dynamic=True,
         warmup_proportion=0.1,
         wraparound_layers=None
     ):
@@ -305,9 +307,11 @@ class SiaViT(pl.LightningModule):
             if isinstance(layer, nn.Linear):
                 nn.init.xavier_uniform_(layer.weight)
 
-        # Dynamic Contrastive Loss
-        self.criterion = DynamicContrastiveLoss(initial_margin=1.0, momentum=0.9)
-        self.dynamic_threshold = 0.5  # Initialize dynamic threshold
+        if cl_margin_dynamic:
+            self.criterion = DynamicContrastiveLoss(initial_margin=cl_margin)
+        else:
+            self.criterion = ContrastiveLoss(margin=cl_margin)
+        self.dynamic_threshold = 0.0  # TEST value at init; shouldn't affect anything in theory
 
     def _compute_feature_dim(self):
         """
