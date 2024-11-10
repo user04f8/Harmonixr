@@ -117,6 +117,65 @@ class ContrastiveLoss(nn.Module):
                (1 - label) * 0.5 * torch.clamp(self.margin - distance, min=0.0).pow(2)
         return loss.mean()
 
+class DynamicContrastiveLoss(nn.Module):
+    """
+    Contrastive Loss with a dynamic margin that adjusts during training based on the distance distributions.
+    """
+    def __init__(self, initial_margin=1.0, momentum=0.9):
+        super(DynamicContrastiveLoss, self).__init__()
+        self.margin = initial_margin
+        self.momentum = momentum
+        self.register_buffer('avg_similar_distance', torch.tensor(0.0))
+        self.register_buffer('avg_dissimilar_distance', torch.tensor(0.0))
+        self.initialized = False
+
+    def forward(self, distance, label):
+        """
+        Computes the loss and updates the dynamic margin.
+
+        Args:
+            distance (Tensor): Tensor of distances between embeddings.
+            label (Tensor): Tensor of labels indicating similar (1) or dissimilar (0) pairs.
+
+        Returns:
+            Tensor: Loss value.
+        """
+        with torch.no_grad():
+            # Compute average distances for similar and dissimilar pairs
+            similar_mask = label == 1
+            dissimilar_mask = label == 0
+
+            if similar_mask.any():
+                mean_similar_distance = distance[similar_mask].mean()
+            else:
+                mean_similar_distance = self.avg_similar_distance
+
+            if dissimilar_mask.any():
+                mean_dissimilar_distance = distance[dissimilar_mask].mean()
+            else:
+                mean_dissimilar_distance = self.avg_dissimilar_distance
+
+            # Initialize running averages if not already done
+            if not self.initialized:
+                self.avg_similar_distance = mean_similar_distance
+                self.avg_dissimilar_distance = mean_dissimilar_distance
+                self.initialized = True
+            else:
+                # Update running averages
+                self.avg_similar_distance = self.momentum * self.avg_similar_distance + \
+                                            (1 - self.momentum) * mean_similar_distance
+                self.avg_dissimilar_distance = self.momentum * self.avg_dissimilar_distance + \
+                                               (1 - self.momentum) * mean_dissimilar_distance
+
+            # Update margin based on the difference between averages
+            # Add a small constant to prevent margin from becoming too small
+            self.margin = max(0.1, self.avg_dissimilar_distance - self.avg_similar_distance)
+
+        # Compute contrastive loss with the dynamic margin
+        loss = (label) * 0.5 * distance.pow(2) + \
+               (1 - label) * 0.5 * torch.clamp(self.margin - distance, min=0.0).pow(2)
+        return loss.mean()
+
 
 class SiaViT(pl.LightningModule):
     """
@@ -169,8 +228,10 @@ class SiaViT(pl.LightningModule):
         weight_decay=1e-5,
         use_AdamW=True,
         cl_margin=1.0,
+        cl_margin_dynamic=True,
         warmup_proportion=0.1,
         wraparound_layers=None
+        
     ):
         super(SiaViT, self).__init__()
         self.save_hyperparameters()
@@ -249,7 +310,10 @@ class SiaViT(pl.LightningModule):
                 nn.init.xavier_uniform_(layer.weight)
 
         # Contrastive Loss
-        self.criterion = ContrastiveLoss(margin=cl_margin)
+        if cl_margin_dynamic:
+            self.criterion = DynamicContrastiveLoss(initial_margin=cl_margin)
+        else:
+            self.criterion = ContrastiveLoss(margin=cl_margin)
         self.dynamic_threshold = 0.5
 
     def _compute_feature_dim(self):
