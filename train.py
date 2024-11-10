@@ -11,9 +11,9 @@ TICKS_PER_MINUTE = 20 * 60
 hparams = {
     'embedding_dim': 512,
     'data_dir': './data',
-    't': 1 * TICKS_PER_MINUTE,
+    't': 1 * TICKS_PER_MINUTE // 4,
     'o': 6, 
-    'batch_size': 4 * 26,
+    'batch_size': 400,
     'lr': 2e-5,
     'threshold': 0.2,
     'num_conv_layers': 4,
@@ -60,7 +60,7 @@ if __name__ == '__main__':
     model = SiaViT(**hparams)
 
     # Set up logger
-    logger = TensorBoardLogger("tb_logs", name="BIG-MIDIClassifier")
+    logger = TensorBoardLogger("tb_logs", name="mini-MIDIClassifier")
 
     # Define callbacks
     # early_stop_callback = EarlyStopping(

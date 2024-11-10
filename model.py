@@ -215,6 +215,9 @@ class SiaViT(pl.LightningModule):
         val_dataset_dissimilar = MIDIDataset(
             self.hparams.data_dir, self.hparams.t, split='val', pair_type='dissimilar'
         )
+        threshold_optim_dataset_mixed = MIDIDataset(
+            self.hparams.data_dir, self.hparams.t, split='val', pair_type='mixed'
+        )
         val_dataset_mixed = MIDIDataset(
             self.hparams.data_dir, self.hparams.t, split='val', pair_type='mixed'
         )
@@ -227,7 +230,10 @@ class SiaViT(pl.LightningModule):
         val_loader_mixed = DataLoader(
             val_dataset_mixed, batch_size=self.hparams.batch_size, num_workers=0
         )
-        return [val_loader_mixed, val_loader_similar, val_loader_dissimilar]
+        threshold_optim_dataloader_mixed = DataLoader(
+            threshold_optim_dataset_mixed, batch_size=self.hparams.batch_size, num_workers=0
+        )
+        return [threshold_optim_dataloader_mixed, val_loader_mixed, val_loader_similar, val_loader_dissimilar]
 
     def validation_step(self, batch, batch_idx, dataloader_idx=0):
         (x1, x2), y = batch
@@ -235,8 +241,7 @@ class SiaViT(pl.LightningModule):
         y = y.float()
         loss = self.criterion(distance, y)
         
-        if dataloader_idx == 0:
-            # Mixed pairs
+        if dataloader_idx == 0: # threshold_optim_dataloader_mixed
             thresholds = torch.linspace(0, 1, steps=1001)
             accuracies = []
 
@@ -248,29 +253,30 @@ class SiaViT(pl.LightningModule):
             accuracies = torch.tensor(accuracies)
             max_idx = torch.argmax(accuracies)
             optimal_threshold = thresholds[max_idx].item()
-            val_acc_mixed = accuracies[max_idx].item()
-
-            acc = val_acc_mixed
-
-            self.log('val_loss_mixed', loss, on_step=False, on_epoch=True, prog_bar=True, add_dataloader_idx=False)
-            self.log('val_acc_mixed', val_acc_mixed, on_step=False, on_epoch=True, prog_bar=True, add_dataloader_idx=False)
-            self.log('optimal_threshold', optimal_threshold, on_step=False, on_epoch=True, prog_bar=True, add_dataloader_idx=False)
-
-            self.dynamic_threshold = optimal_threshold
+            acc = accuracies[max_idx].item()
         else:
             preds = (distance < self.dynamic_threshold).long()
             acc = (preds == y.long()).float().mean()
 
-            if dataloader_idx == 1:
-                # Similar pairs
-                self.log('val_loss_similar', loss, on_step=False, on_epoch=True, prog_bar=True, add_dataloader_idx=False)
-                self.log('val_acc_similar', acc, on_step=False, on_epoch=True, prog_bar=True, add_dataloader_idx=False)
-            elif dataloader_idx == 2:
-                # Dissimilar pairs
-                self.log('val_loss_dissimilar', loss, on_step=False, on_epoch=True, prog_bar=True, add_dataloader_idx=False)
-                self.log('val_acc_dissimilar', acc, on_step=False, on_epoch=True, prog_bar=True, add_dataloader_idx=False)
-            else:
-                raise AssertionError("dataloader_idx out of bounds")
+        if dataloader_idx == 0:
+            self.log('psuedoval_loss_mixed', loss, on_step=False, on_epoch=True, prog_bar=False, add_dataloader_idx=False)
+            self.log('psuedoval_acc_mixed', acc, on_step=False, on_epoch=True, prog_bar=True, add_dataloader_idx=False)
+            self.log('optimal_threshold', optimal_threshold, on_step=False, on_epoch=True, prog_bar=True, add_dataloader_idx=False)
+
+            self.dynamic_threshold = optimal_threshold
+        elif dataloader_idx == 1:
+            self.log('val_loss_mixed', loss, on_step=False, on_epoch=True, prog_bar=True, add_dataloader_idx=False)
+            self.log('val_acc_mixed', acc, on_step=False, on_epoch=True, prog_bar=True, add_dataloader_idx=False)
+        elif dataloader_idx == 2:
+            # Similar pairs
+            self.log('val_loss_similar', loss, on_step=False, on_epoch=True, prog_bar=False, add_dataloader_idx=False)
+            self.log('val_acc_similar', acc, on_step=False, on_epoch=True, prog_bar=True, add_dataloader_idx=False)
+        elif dataloader_idx == 3:
+            # Dissimilar pairs
+            self.log('val_loss_dissimilar', loss, on_step=False, on_epoch=True, prog_bar=False, add_dataloader_idx=False)
+            self.log('val_acc_dissimilar', acc, on_step=False, on_epoch=True, prog_bar=True, add_dataloader_idx=False)
+        else:
+            raise AssertionError("dataloader_idx out of bounds")
 
         return {'val_loss': loss, 'val_acc': acc}
     
