@@ -3,12 +3,17 @@ import pytorch_lightning as pl
 from pytorch_lightning.callbacks import ModelCheckpoint
 from pytorch_lightning.loggers import TensorBoardLogger
 from model import SiaViT
-
-torch.set_float32_matmul_precision('high')
+from fire import Fire
 
 TICKS_PER_MINUTE = 20 * 60
 
-if __name__ == '__main__':
+def train(
+        max_epochs=150,
+        devices=1,
+        batch_size=128
+):
+
+    torch.set_float32_matmul_precision('high')
 
     # Instantiate the model
     model = SiaViT(
@@ -16,7 +21,7 @@ if __name__ == '__main__':
         data_dir='./data',
         t=TICKS_PER_MINUTE,
         o=6,
-        batch_size=128,
+        batch_size=batch_size,
         lr=5e-6,
         num_conv_layers=3,
         conv_channels=[32, 64, 128],
@@ -53,14 +58,17 @@ if __name__ == '__main__':
 
     # Initialize trainer
     trainer = pl.Trainer(
-        max_epochs=500,
+        max_epochs=max_epochs,
         logger=logger,
         callbacks=[checkpoint_callback],
         accelerator='gpu' if torch.cuda.is_available() else 'cpu',
-        devices=1,
+        devices=devices,
         gradient_clip_val=1.0,
         enable_progress_bar=True
     )
 
     # Train the model
     trainer.fit(model)
+
+if __name__ == '__main__':
+    Fire(train)

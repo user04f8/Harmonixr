@@ -7,3 +7,4 @@ tensorboard
 tensorboardX
 plotly
 tqdm
+fire
