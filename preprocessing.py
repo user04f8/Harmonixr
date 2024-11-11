@@ -11,7 +11,7 @@ def parse_filename(filename):
     composer_last = parts[0].strip()
     composer_first = parts[1].strip()
     composer_name = f"{composer_last} {composer_first}"
-    piece_name = ','.join(parts[2:]).strip().replace('.mid', '')
+    piece_name = ','.join(parts[2:-1]).strip().replace('.mid', '')
     return composer_name, piece_name
 
 def transpose_pitch(midi_note):
@@ -81,6 +81,7 @@ def process_midi_folder(folder_path, time_resolution_ms=10):
     composer_to_id = {}
     piece_arrays = []
     composer_ids = []
+    piece_names = []
 
     # Get list of all MIDI files
     midi_files = [f for f in os.listdir(folder_path) if f.endswith('.mid')]
@@ -97,6 +98,7 @@ def process_midi_folder(folder_path, time_resolution_ms=10):
         # Convert to PyTorch tensor with uint8 type
         piece_arrays.append(torch.tensor(midi_array, dtype=torch.uint8))
         composer_ids.append(composer_to_id[composer])
+        piece_names.append(piece)
 
     # Save composer embedding vector as a tensor
     composer_vector = torch.tensor(composer_ids, dtype=torch.long)
@@ -106,19 +108,20 @@ def process_midi_folder(folder_path, time_resolution_ms=10):
         for composer, composer_id in composer_to_id.items():
             f.write(f"{composer_id}: {composer}\n")
     
-    return piece_arrays, composer_vector
+    return piece_arrays, composer_vector, piece_names
 
-def save_tensor(piece_arrays, composer_vector, tensor_path="midi_pieces.pt", composer_vector_path="composer_vector.pt"):
-    """Saves the list of piece tensors and composer vector to the specified paths."""
+def save_tensor(piece_arrays, composer_vector, piece_names, tensor_path="midi_pieces.pt", composer_vector_path="composer_vector.pt", piece_names_path="piece_names.pt"):
+    """Saves the list of piece tensors, composer vector, and piece names to the specified paths."""
     torch.save(piece_arrays, tensor_path)  # Save list of piece tensors
     torch.save(composer_vector, composer_vector_path)  # Save composer vector
+    torch.save(piece_names, piece_names_path)  # Save piece names list
     print(f"Piece tensors saved to {tensor_path}")
     print(f"Composer vector saved to {composer_vector_path}")
-
+    print(f"Piece names saved to {piece_names_path}")
 # Usage example
 folder_path = 'surname_checked_midis'
 time_resolution_ms = 50  # Define the time grid in milliseconds
 
 # Process the folder and save the tensor and composer vector
-piece_arrays, composer_vector = process_midi_folder(folder_path, time_resolution_ms)
-save_tensor(piece_arrays, composer_vector)
+piece_arrays, composer_vector, piece_names = process_midi_folder(folder_path, time_resolution_ms)
+save_tensor(piece_arrays, composer_vector, piece_names)
