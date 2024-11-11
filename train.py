@@ -12,7 +12,7 @@ if __name__ == '__main__':
 
     # Instantiate the model
     model = SiaViT(
-        embedding_dim=256,
+        embedding_dim=128,
         data_dir='./data',
         t=TICKS_PER_MINUTE,
         o=6,
@@ -23,16 +23,16 @@ if __name__ == '__main__':
         conv_kernel_sizes=[(5, 5, 5), (3, 3, 3), (3, 3, 3)],
         conv_strides=[(2, 2, 2), (1, 1, 2), (1, 1, 1)],
         conv_paddings=[(2, 2, 2), (1, 1, 1), (1, 1, 1)],
-        dropout_rates=[0.4, 0.3, 0.3],
+        dropout_rates=[0.5, 0.4, 0.4],
         maxpool_kernel_sizes=[(2, 1, 2), (2, 1, 2), (1, 1, 2)],
         transformer_d_model=512,
         transformer_nhead=16,
         transformer_num_layers=3,
-        transformer_dropout=0.2,
+        transformer_dropout=0.3,
         fc_hidden_dims=[512, 256],
         weight_decay=1e-5,
         use_AdamW=True,
-        cl_margin=1.0,
+        cl_margin=0.3,
         cl_margin_dynamic=True,
         warmup_proportion=0.1,
         wraparound_layers=[True, False, False],

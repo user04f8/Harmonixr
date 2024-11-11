@@ -315,8 +315,9 @@ class SiaViT(pl.LightningModule):
 
         if cl_margin_dynamic:
             self.criterion = DynamicContrastiveLoss(initial_margin=cl_margin, cl_min_start=cl_min_start, cl_min_increase_per_epoch=cl_min_increase_per_epoch)
+            self.val_criterion = ContrastiveLoss(margin=cl_margin)
         else:
-            self.criterion = ContrastiveLoss(margin=cl_margin)
+            self.criterion = self.val_criterion = ContrastiveLoss(margin=cl_margin)
         self.dynamic_threshold = 0.0  # TEST value at init; shouldn't affect anything in theory
 
     def _compute_feature_dim(self):
@@ -476,7 +477,7 @@ class SiaViT(pl.LightningModule):
             self.distances.append(distance.detach())
             self.labels.append(y.detach())
         else:
-            loss = self.criterion(distance, y, update_margin=False)
+            loss = self.val_criterion(distance, y, update_margin=False)
             preds = (distance < self.dynamic_threshold).long()
             acc = (preds == y.long()).float().mean()
 
