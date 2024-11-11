@@ -173,7 +173,7 @@ class DynamicContrastiveLoss(nn.Module):
 
                 # Update margin based on the difference between averages
                 # Add a small constant to prevent margin from becoming too small
-                self.margin = max(0., self.avg_dissimilar_distance - self.avg_similar_distance) + min(1., self.cl_min_start + epoch * self.cl_min_increase_per_epoch)
+                self.margin = max(0., self.avg_dissimilar_distance - self.avg_similar_distance) + min(.3, self.cl_min_start + epoch * self.cl_min_increase_per_epoch)
         # Compute contrastive loss with the dynamic margin
         loss = (label) * 0.5 * distance.pow(2) + \
                (1 - label) * 0.5 * torch.clamp(self.margin - distance, min=0.0).pow(2)
