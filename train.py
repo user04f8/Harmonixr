@@ -36,8 +36,8 @@ if __name__ == '__main__':
         cl_margin_dynamic=True,
         warmup_proportion=0.1,
         wraparound_layers=[True, False, False],
-        cl_min_start=0.08,
-        cl_min_increase_per_epoch=0.001
+        cl_min_start=0.3,
+        cl_min_increase_per_epoch=0
     )
 
     # Set up logger
