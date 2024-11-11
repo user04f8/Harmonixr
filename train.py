@@ -17,7 +17,7 @@ if __name__ == '__main__':
         t=TICKS_PER_MINUTE,
         o=6,
         batch_size=128,
-        lr=1e-5,
+        lr=5e-6,
         num_conv_layers=3,
         conv_channels=[32, 64, 128],
         conv_kernel_sizes=[(5, 5, 5), (3, 3, 3), (3, 3, 3)],
@@ -36,8 +36,8 @@ if __name__ == '__main__':
         cl_margin_dynamic=True,
         warmup_proportion=0.1,
         wraparound_layers=[True, False, False],
-        cl_min_start=0.05,
-        cl_min_increase_per_epoch=0.01
+        cl_min_start=0.08,
+        cl_min_increase_per_epoch=0.001
     )
 
     # Set up logger
