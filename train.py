@@ -25,18 +25,20 @@ if __name__ == '__main__':
         conv_paddings=[(2, 2, 2), (1, 1, 1), (1, 1, 1)],
         dropout_rates=[0.5, 0.4, 0.4],
         maxpool_kernel_sizes=[(2, 1, 2), (2, 1, 2), (1, 1, 2)],
+        use_residual=True,
         transformer_d_model=512,
-        transformer_nhead=16,
+        transformer_nhead=8,
+        transformer_encoder_size=1024,
         transformer_num_layers=3,
         transformer_dropout=0.3,
         fc_hidden_dims=[512, 256],
         weight_decay=1e-5,
         use_AdamW=True,
-        cl_margin=0.3,
+        cl_margin=0.1,
         cl_margin_dynamic=True,
         warmup_proportion=0.1,
         wraparound_layers=[True, False, False],
-        cl_min_start=0.3,
+        cl_min_start=0.1,
         cl_min_increase_per_epoch=0
     )
 
