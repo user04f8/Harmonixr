@@ -222,9 +222,11 @@ class SiaViT(pl.LightningModule):
         conv_strides=None,
         conv_paddings=None,
         dropout_rates=None,
+        use_residual=True,
         maxpool_kernel_sizes=None,
         transformer_d_model=512,
         transformer_nhead=8,
+        transformer_encoder_size=1024,
         transformer_num_layers=6,
         fc_hidden_dims=None,
         weight_decay=1e-5,
@@ -260,13 +262,22 @@ class SiaViT(pl.LightningModule):
             padding = conv_paddings[i]
             use_wraparound = wraparound_layers[i]
             
-            conv_layer = ResidualConv3D(
-                in_channels, out_channels,
-                kernel_size=kernel_size,
-                stride=stride,
-                padding=padding,
-                use_wraparound=use_wraparound
-            )
+            if use_residual:
+                conv_layer = ResidualConv3D(
+                    in_channels, out_channels,
+                    kernel_size=kernel_size,
+                    stride=stride,
+                    padding=padding,
+                    use_wraparound=use_wraparound
+                )
+            else:
+                conv_layer = WraparoundConv3D(
+                    in_channels, out_channels,
+                    kernel_size=kernel_size,
+                    stride=stride,
+                    padding=padding,
+                    use_wraparound=use_wraparound
+                )
             conv_layers.append(conv_layer)
             conv_layers.append(nn.MaxPool3d(kernel_size=maxpool_kernel_sizes[i]))
             conv_layers.append(nn.Dropout(dropout_rates[i]))
@@ -285,7 +296,7 @@ class SiaViT(pl.LightningModule):
         encoder_layer = nn.TransformerEncoderLayer(
             d_model=transformer_d_model,
             nhead=transformer_nhead,
-            dim_feedforward=2048,
+            dim_feedforward=transformer_encoder_size,
             dropout=transformer_dropout,
             activation='relu',
             layer_norm_eps=1e-5,
