@@ -66,16 +66,16 @@ def visualize_conv3d_layers(model, num_filters=5, slice_dim=2):
             for i, slice_idx in enumerate(slice_indices):
                 if slice_dim == 0:
                     slice_2d = filter_3d[slice_idx, :, :]  # Depth slice
-                    x_title = "Height"
-                    y_title = "Width"
+                    x_title = "Octave"
+                    y_title = "Time"
                 elif slice_dim == 1:
                     slice_2d = filter_3d[:, slice_idx, :]  # Height slice
-                    x_title = "Depth"
-                    y_title = "Width"
+                    x_title = "Pitch"
+                    y_title = "Time"
                 else:
                     slice_2d = filter_3d[:, :, slice_idx]  # Width slice
-                    x_title = "Depth"
-                    y_title = "Height"
+                    x_title = "Pitch"
+                    y_title = "Octave"
                 
                 # Normalize the slice for better visualization
                 slice_min, slice_max = slice_2d.min(), slice_2d.max()
