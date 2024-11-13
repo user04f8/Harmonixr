@@ -25,9 +25,7 @@ def visualize_conv3d_layers(model, num_filters=5, slice_dim=2):
     if not conv3d_layers:
         print("No 3D convolutional layers found in the model.")
         return
-    
-    conv3d_layers = conv3d_layers[3:]  # max to 3
-    
+        
     print(f"Found {len(conv3d_layers)} 3D convolutional layer(s).")
     
     for layer_idx, (layer_name, conv_layer) in enumerate(conv3d_layers):
@@ -60,7 +58,7 @@ def visualize_conv3d_layers(model, num_filters=5, slice_dim=2):
             fig = make_subplots(
                 rows=1, cols=min(max_slices, num_slices),
                 subplot_titles=[f"Slice {idx}" for idx in slice_indices],
-                horizontal_spacing=0.02
+                horizontal_spacing=0.05
             )
             
             for i, slice_idx in enumerate(slice_indices):
@@ -115,5 +113,5 @@ if __name__ == '__main__':
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     model = load_model(checkpoint_path, device=device)
 
-    visualize_conv3d_layers(model, num_filters=1e99, slice_dim=0)
+    visualize_conv3d_layers(model)
 
