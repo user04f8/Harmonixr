@@ -3,6 +3,10 @@
 
 ![A visualization of the tensor representation of MIDI data](assets/tensor_representation_viz.gif)
 
+![An animated visualization of a 3D t-SNE embedding of MIDI files](assets/pieces_ani.gif)
+
+![An animated visualization of a 3D t-SNE embedding of MIDI files](assets/clusters_ani.gif)
+
 ## Summary
 
 Harmonixr is a set of foundational tools for interpreting MIDI, leveraging deep neural networks to generate vector embeddings of MIDI files. In this repo, we advance the SiaViT architecture, demonstrate the impressive accuracy of the SiaViT embeddings on the [GiantMIDI-Piano](https://github.com/bytedance/GiantMIDI-Piano) dataset that is robust to various hyperparameter selections, and present composer embeddings which subjectively align with traditional music theoretic understandings of stylistic similarity across composers. 
@@ -66,7 +70,11 @@ We leverage t-SNE to reduce our embedding space to three dimensions, and obtain 
 
 ![3D t-SNE fully trained model per piece](assets/tsne_piece_alt.png)
 
+![An animated visualization of a 3D t-SNE embedding of MIDI files](assets/pieces_ani.gif)
+
 ![3D t-SNE fully trained model per composer](assets/tsne_composers_alt.png)
+
+![An animated visualization of a 3D t-SNE embedding of MIDI files](assets/clusters_ani.gif)
 
 Interestingly, we observe a consistent trend across diverse hyperparameters and distinct initializations in the general structure of the t-SNE embedding given a sufficient contrastive loss margin over sufficient epochs; the model starts with a 0-dimensional completely random representation of the data, gradually stretches out certain clusters (as shown in the below t-SNE of a partially trained model) until a largely 1D embedding space exists, and eventually converges to a higher-dimensional representation.
 
