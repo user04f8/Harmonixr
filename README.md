@@ -54,6 +54,22 @@ To validate accuracy, we separate out a validation set of MIDI files and define 
 
 Above, a selection of TensorBoard charts is shown with various evaluation metrics over training iterations.
 
+We also evaluate the ROC curve to get a better idea of the model's performance over different thresholds:
+
+![ROC Curve](assets/roc_curve.png)
+
+## Visualization
+
+We leverage t-SNE to reduce our embedding space to three dimensions, and obtain the following plots on a per-piece and per-composer basis.
+
+![3D t-SNE fully trained model per piece](assets/tsne_piece_alt.png)
+
+![3D t-SNE fully trained model per composer](assets/tsne_composer_alt.png)
+
+Interestingly, we observe a consistent trend across diverse hyperparameters and distinct initializations in the general structure of the t-SNE embedding given a sufficient contrastive loss margin over sufficient epochs; the model starts with a 0-dimensional completely random representation of the data, gradually stretches out certain clusters (as shown in the below t-SNE of a partially trained model) until a largely 1D embedding space exists, and eventually converges to a higher-dimensional representation.
+
+![3D t-SNE partially trained model](assets/tsne_piece_alt_less_trained.png)
+
 ## Reproducability
 
 In order to reproduce our result, follow the below steps:
