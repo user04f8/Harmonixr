@@ -3,9 +3,9 @@
 
 ## Summary
 
-Harmonixr is a set of foundational tools for interpreting MIDI, leveraging a deep neural networks to generate vector embeddings of MIDI files. In this repo, we advance the SiaViT architecture, demonstrate the impressive accuracy of the SiaViT embeddings on the [GiantMIDI-Piano](https://github.com/bytedance/GiantMIDI-Piano) dataset that is robust to various hyperparameter selections, and present composer embeddings which subjectively align with traditional music theoretic understandings of stylistic similarity across composers. 
+Harmonixr is a set of foundational tools for interpreting MIDI, leveraging deep neural networks to generate vector embeddings of MIDI files. In this repo, we advance the SiaViT architecture, demonstrate the impressive accuracy of the SiaViT embeddings on the [GiantMIDI-Piano](https://github.com/bytedance/GiantMIDI-Piano) dataset that is robust to various hyperparameter selections, and present composer embeddings which subjectively align with traditional music theoretic understandings of stylistic similarity across composers. 
 
-Check out our demo video here!
+Check out our demo video here! [https://youtu.be/fOh5c4mRAGI](https://youtu.be/fOh5c4mRAGI)
 
 ## SiaViT
 
@@ -40,7 +40,7 @@ We evaluate our model training on [GiantMIDI-Piano](https://github.com/bytedance
 
 We transform each MIDI file into a 3D tensor with dimensions pitch = 12, octave = 6, and time. Pitch and octave represent the 72 most common notes (F1 to E7) in the data set, and time represents the active notes being played for each 50ms time window in the midi file. Each value within a tensor is defined as 0 when a note is not playing, or a time-decayed velocity to simulate the natural decrease in volume when a key in a piano is played.
 
-## Validation
+## Evaluation
 
 To validate accuracy, we separate out a validation set of MIDI files and define separate "psuedovalidation", same-pair validation, different-pair validation, and mixed validation dataloaders. We define an accuracy metric as the proportion of MIDI pairs correctly predicted as being composed by the same or different composer based on an arbitrary threshold; we then use the psuedovalidation dataset to find an optimal threshold while mitigating overfitting our accuracy metric's threshold to the validation set. We then validate contrastive loss with a static margin and accuracy on each of the other validation dataloaders.
 
