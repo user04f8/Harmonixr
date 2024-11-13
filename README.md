@@ -3,15 +3,15 @@
 
 ![A visualization of the tensor representation of MIDI data](assets/tensor_representation_viz.gif)
 
-![An animated visualization of a 3D t-SNE embedding of MIDI files](assets/pieces_ani.gif)
-
-![An animated visualization of a 3D t-SNE embedding of MIDI files](assets/clusters_ani.gif)
-
 ## Summary
 
 Harmonixr is a set of foundational tools for interpreting MIDI, leveraging deep neural networks to generate vector embeddings of MIDI files. In this repo, we advance the SiaViT architecture, demonstrate the impressive accuracy of the SiaViT embeddings on the [GiantMIDI-Piano](https://github.com/bytedance/GiantMIDI-Piano) dataset that is robust to various hyperparameter selections, and present composer embeddings which subjectively align with traditional music theoretic understandings of stylistic similarity across composers. 
 
 Check out our demo video here! [https://youtu.be/fOh5c4mRAGI](https://youtu.be/fOh5c4mRAGI)
+
+![An animated visualization of a 3D t-SNE embedding of MIDI files](assets/pieces_ani.gif)
+
+![An animated visualization of a 3D t-SNE embedding of MIDI files](assets/clusters_ani.gif)
 
 ## SiaViT
 
