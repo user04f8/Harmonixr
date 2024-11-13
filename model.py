@@ -222,11 +222,11 @@ class SiaViT(pl.LightningModule):
         conv_strides=None,
         conv_paddings=None,
         dropout_rates=None,
-        use_residual=True,
+        use_residual=False,
         maxpool_kernel_sizes=None,
         transformer_d_model=512,
         transformer_nhead=8,
-        transformer_encoder_size=1024,
+        transformer_encoder_size=2048,
         transformer_num_layers=6,
         fc_hidden_dims=None,
         weight_decay=1e-5,
@@ -250,7 +250,9 @@ class SiaViT(pl.LightningModule):
         assert dropout_rates is not None, "dropout_rates must be provided"
         assert maxpool_kernel_sizes is not None, "maxpool_kernel_sizes must be provided"
         assert fc_hidden_dims is not None, "fc_hidden_dims must be provided"
-        assert wraparound_layers is not None, "wraparound_layers must be provided"
+        # assert wraparound_layers is not None, "wraparound_layers must be provided"
+        if wraparound_layers is None:
+            self.hparams.wraparound_layers = wraparound_layers = [True] * len(conv_channels)
 
         # Build convolutional layers
         conv_layers = []

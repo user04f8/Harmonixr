@@ -106,7 +106,7 @@ def visualize_conv3d_layers(model, num_filters=5, slice_dim=2):
 
 if __name__ == '__main__':
     print("Loading model")
-    checkpoint_path = r'tb_logs/BIG-MIDIClassifier/version_15/checkpoints/last.ckpt'
+    checkpoint_path = r'tb_logs/BIG-MIDIClassifier/version_15/checkpoints/last.ckpt'  # NOTE: not compatible with SiaViT
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     model = load_model(checkpoint_path, device=device)
 
