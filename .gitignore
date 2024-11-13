@@ -6,6 +6,7 @@ harmony/
 GiantMIDI-PIano/
 checkpoints
 tb_logs
+ani-helper.py
 
 # TODO: add data download directions
 # TODO: restructure entirely
