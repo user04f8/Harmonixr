@@ -22,7 +22,9 @@ We then train our model on our data as subsamples of randomly selected pairs, li
 
 ### Convolutions
 
-In order to enable our model to learn kernels over both pitch and octave in a way that is agnostic to the selection of the "lowest" and "highest" pitch within an octave, we propose rolled wraparound convolutions, implemented as `WraparoundConv3D` in `model.py`. 
+In order to enable our model to learn kernels over both pitch and octave in a way that is agnostic to the selection of the "lowest" and "highest" pitch within an octave, we propose rolled wraparound convolutions, implemented as `WraparoundConv3D` in `model.py`.  An example convolutional filter from a trained model is presented below, with each slice representing a slice in the time dimension of the convolutional filter:
+
+![A visualization of a 3D convolutional filter](assets/conv_viz.png)
 
 In order to improve the speed and consistency of training convergence across deeper models, we leverage residual convolutional layers extending the above with skip connections between every other convolutional layer.
 
