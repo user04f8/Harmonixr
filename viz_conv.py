@@ -1,3 +1,4 @@
+from time import sleep
 import torch
 import numpy as np
 import plotly.graph_objects as go
@@ -24,6 +25,8 @@ def visualize_conv3d_layers(model, num_filters=5, slice_dim=2):
     if not conv3d_layers:
         print("No 3D convolutional layers found in the model.")
         return
+    
+    conv3d_layers = conv3d_layers[3:]  # max to 3
     
     print(f"Found {len(conv3d_layers)} 3D convolutional layer(s).")
     
@@ -103,10 +106,12 @@ def visualize_conv3d_layers(model, num_filters=5, slice_dim=2):
             )
             
             fig.show()
+    
+            sleep(0.5)  # NOTE: very important to give viz time to load and avoid epilepsy trigger
 
 if __name__ == '__main__':
     print("Loading model")
-    checkpoint_path = r'tb_logs/SiaViT/version_34/checkpoints/last.ckpt'
+    checkpoint_path = r'tb_logs/SiaViT/version_43/checkpoints/last.ckpt'
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     model = load_model(checkpoint_path, device=device)
 
