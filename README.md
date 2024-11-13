@@ -66,7 +66,7 @@ We leverage t-SNE to reduce our embedding space to three dimensions, and obtain 
 
 ![3D t-SNE fully trained model per piece](assets/tsne_piece_alt.png)
 
-![3D t-SNE fully trained model per composer](assets/tsne_composer_alt.png)
+![3D t-SNE fully trained model per composer](assets/tsne_composers_alt.png)
 
 Interestingly, we observe a consistent trend across diverse hyperparameters and distinct initializations in the general structure of the t-SNE embedding given a sufficient contrastive loss margin over sufficient epochs; the model starts with a 0-dimensional completely random representation of the data, gradually stretches out certain clusters (as shown in the below t-SNE of a partially trained model) until a largely 1D embedding space exists, and eventually converges to a higher-dimensional representation.
 
