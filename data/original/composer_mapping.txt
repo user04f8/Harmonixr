@@ -1,0 +1,1787 @@
+0: Tcherepnin Nikolay
+1: Bach Johann Sebastian
+2: Tinel Jef
+3: Liebling Emil
+4: Bochsa Nicholas Charles
+5: Nicholls William Heller
+6: Smith Sydney
+7: Beethoven Ludwig van
+8: Welleba Leopold
+9: Cluzeau Mortet Luis
+10: Czerny Carl
+11: Kotilainen Otto
+12: Violette Andrew
+13: Wachs Paul
+14: Scarlatti Domenico
+15: Feinberg Samuil
+16: Coleridge-Taylor Samuel
+17: MacDowell Edward
+18: Visée Robert de
+19: Sousa John Philip
+20: Rebikov Vladimir
+21: Agnew Roy
+22: Magnard Albéric
+23: Satie Erik
+24: Litolff Henry Charles
+25: Kleber Henry
+26: Merino Martínez Aitor
+27: Frontini Francesco Paolo
+28: Moniuszko Stanisław
+29: Dukas Paul
+30: Souto Eduardo
+31: Berens Hermann
+32: Schumann Clara
+33: Fetrás Oscar
+34: Brahms Johannes
+35: Fauré Gabriel
+36: Bohm Carl
+37: Beach Amy Marcy
+38: Akimenko Theodore
+39: Sartorio Arnoldo
+40: Fuchs Robert
+41: De Crescenzo Costantino
+42: Clementi Muzio
+43: Simpson Daniel Léo
+44: Campion François
+45: Granados Enrique
+46: Kirchner Theodor
+47: Beneking Stephan
+48: Heller Stephen
+49: Smallwood William
+50: Ježek Jaroslav
+51: Croze Ferdinand de
+52: Gieseking Walter
+53: Zurluth Michel
+54: Hampton Robert
+55: Gurlitt Cornelius
+56: Tchaikovsky Pyotr
+57: Paull Edward Taylor
+58: Kamman Effie F.
+59: Friml Rudolf
+60: Trombley George Lem
+61: Costa Fabio
+62: Haydn Joseph
+63: Bowen York
+64: Chavagnat Edouard
+65: Turina Joaquín
+66: Godard Benjamin
+67: Villoldo Ángel Gregorio
+68: Burleigh Cecil
+69: Botte Adolphe
+70: Miles Walter E.
+71: Reinecke Carl
+72: Teilman Christian
+73: Folwell John C.
+74: Drozdov Anatoly
+75: Hitz Franz
+76: Noskowski Zygmunt
+77: Nielsen Carl
+78: Statkowski Roman
+79: Espino Felipe
+80: Bantock Granville
+81: Velásquez Glauco
+82: Twycross Martin
+83: Wieniawski Józef
+84: Handel George Frideric
+85: Franck César
+86: Grechaninov Aleksandr
+87: Rochard Jules
+88: Berwald Franz
+89: Duvernoy Victor Alphonse
+90: Andrieu Fernand
+91: Leybach Ignace Xavier Joseph
+92: Blumenfeld Felix
+93: Meyer-Helmund Erik
+94: Adiego Navarro Tomás
+95: Backer-Grøndahl Agathe
+96: Rosey George
+97: Gazzaneo Paulo
+98: Mikuli Carl
+99: Prokofiev Sergey
+100: Zhang Shuwen
+101: Villa-Lobos Heitor
+102: Reyer Ernest
+103: Nowakowski Józef
+104: Ireland John
+105: Schubert Franz
+106: Bartók Béla
+107: Mozart Wolfgang Amadeus
+108: Lyadov Anatoly
+109: Scriabin Aleksandr
+110: Hollins Alfred
+111: Rzewski Frederic
+112: Praetorius Michael
+113: Chen Jason
+114: Glazunov Aleksandr
+115: Laguna Julián
+116: Carbajo Víctor
+117: Lamb Joseph Francis
+118: Jones Sidney
+119: Stravinsky Igor
+120: Grünfeld Alfred
+121: Sapelnikov Vasily
+122: Medtner Nikolay
+123: Webern Anton
+124: Dietrich Albert Hermann
+125: Scott Cyril
+126: Weber Carl Maria von
+127: Mussorgsky Modest
+128: Hahn Reynaldo
+129: Krzyżanowski Ignacy
+130: Kahn Robert
+131: Psimikakis-Chalkokondylis Nikolaos-Laonikos
+132: Lourié Arthur
+133: Bennett William Sterndale
+134: Liszt Franz
+135: Stamaty Camille
+136: Sor Fernando
+137: Melcer-Szczawiński Henryk
+138: David Félicien
+139: Jackman Stephen
+140: Skoumal Adam
+141: Moret Ernest
+142: Lefébure-Wély Louis James Alfred
+143: Chaminade Cécile
+144: Mills Kerry
+145: Burdick Richard Oscar
+146: Gernsheim Friedrich
+147: Kurpiński Karol
+148: Fisher Leander
+149: Fuchs Armin
+150: Bonis Mel
+151: Burgmüller Friedrich
+152: Delioux Charles
+153: Henselt Adolf von
+154: Alba Antonio
+155: Hindemith Paul
+156: Greef Arthur de
+157: Macchi Claudio
+158: Bizet Georges
+159: Niemann Walter
+160: Waldteufel Emile
+161: Raff Joachim
+162: Balakirev Mily
+163: Schlegel Leander
+164: Chopin Frédéric
+165: Sorabji Kaikhosru Shapurji
+166: Zipoli Domenico
+167: Johnson Charles Leslie
+168: Molina Akiana
+169: Glinka Mikhail
+170: Ries Ferdinand
+171: Joplin Scott
+172: Lyapunov Sergey
+173: Lack Théodore
+174: Zwyssig Alberich
+175: Cobb George L.
+176: Erb Marie Josef
+177: Smetana Bedřich
+178: Lange Gustav
+179: Grieg Edvard
+180: Aubert Louis
+181: Honegger Arthur
+182: Emmanuel Maurice
+183: Broqua Alfonso
+184: Moszkowski Moritz
+185: Gounod Charles
+186: Petre Torsten
+187: Croisez Alexandre
+188: Harris Cuthbert
+189: Colomer Blas María de
+190: Rachmaninoff Sergei
+191: Adams A. Emmett
+192: Schmitt Florent
+193: Tomkins Thomas
+194: Galos Giselle
+195: Shirley Nathan
+196: Vrangel Vasily
+197: Falla Manuel de
+198: Polovinkin Leonid
+199: Wagner Richard
+200: Arndt Felix
+201: Schillinger Joseph
+202: Peterson-Berger Wilhelm
+203: Mesquita Henrique Alves de
+204: Schumann Robert
+205: Poulenc Francis
+206: Nazareth Ernesto
+207: Pachulski Henryk
+208: Ibert Jacques
+209: Zierau Fritz
+210: Sacks Woldemar
+211: Carcassi Matteo
+212: Respighi Ottorino
+213: Danzi Franz
+214: Brumel Antoine
+215: Kalkbrenner Friedrich Wilhelm
+216: Gardana Enea
+217: Le Couppey Félix
+218: Blasco de Nebra Manuel
+219: Ascher Joseph
+220: Jungmann Albert
+221: Zarlino Gioseffo
+222: Voříšek Jan Václav
+223: Hennessy Swan
+224: Ruthardt Adolf
+225: Scharwenka Philipp
+226: Durand Auguste
+227: Swinstead Felix
+228: Cinna Óscar de la
+229: Mourey Colette
+230: Trevizan Lucas
+231: Karagichev Boris
+232: Grovlez Gabriel
+233: Hummel Johann Nepomuk
+234: Ogonbaev Atai
+235: Sjögren Emil
+236: Gutmann Adolf
+237: Methfessel Albert Gottlieb
+238: Gottschalk Louis Moreau
+239: Hartmann Johan Peter Emilius
+240: Harrington Jeffrey Michael
+241: Moscheles Ignaz
+242: Valen Fartein
+243: Grainger Percy
+244: Du Mont Henry
+245: Morel Campos Juan
+246: Kéler Béla
+247: Ornstein Leo
+248: Berger Rodolphe
+249: Pejačević Dora
+250: Godefroid Félix
+251: Reinhold Hugo
+252: Butler Leonard
+253: Massenet Jules
+254: Cramer Johann Baptist
+255: Gade Niels
+256: Ward Theo
+257: Lecuona Ernesto
+258: Mawet Lucien
+259: Elgar Edward
+260: Séverac Déodat de
+261: Arensky Anton
+262: Bendel Franz
+263: D'Andrea Giovanni
+264: Karg-Elert Sigfrid
+265: Cassadó Gaspar
+266: Stults Robert Morrison
+267: Stolpe Antoni
+268: Jordan Jules
+269: Battmann Jacques-Louis
+270: Yuferov Sergey
+271: Maylath Henry
+272: Bainton Edgar Leslie
+273: Protopopov Sergey
+274: Boulanger Lili
+275: Santos Carrión Julián
+276: Dupont Gabriel
+277: Carnero Ana Leira
+278: Clark Cuthbert Edward
+279: Bertini Henri
+280: Suk Josef
+281: Wilm Nicolai von
+282: Hannikainen Ilmari
+283: Duvernoy Jean-Baptiste
+284: Wielhorski Józef
+285: Ravina Jean Henri
+286: Jongen Joseph
+287: Snuggs Colin Peter
+288: Strauss Richard
+289: Alkan Charles-Valentin
+290: Collin Charles-Augustin
+291: Scott James
+292: Morales Cristóbal de
+293: Courras Philippe
+294: Dandrieu Jean-François
+295: Juon Paul
+296: Graener Paul
+297: Herbert Victor
+298: Grosz Ludwig
+299: Pettoletti Joachim
+300: Nietzsche Friedrich
+301: Legnani Luigi
+302: Amani Nikolay
+303: Pacheco John Manuel
+304: Caturla Alejandro García
+305: Dvořák Antonín
+306: Rogers James Hotchkiss
+307: Diabelli Anton
+308: Castro Ricardo
+309: Fabini Eduardo
+310: Demarin Luka
+311: Jensen Adolf
+312: Victoria Tomás Luis de
+313: Botsford George
+314: Foster Stephen
+315: Ernst Philip
+316: Farjeon Harry
+317: Brisson Frédéric
+318: Damcke Berthold
+319: Schad Joseph
+320: Christias Michalis
+321: Bendix Victor
+322: Albéniz Isaac
+323: Goossens Eugene
+324: Vincent Auguste
+325: Tausig Carl
+326: Bax Arnold
+327: Donizetti Gaetano
+328: Marcailhou Gatien
+329: Beer B.
+330: Mullen Alfred Frederic
+331: Louis Ferdinand Prince of Prussia
+332: German Edward
+333: Clarke Jeremiah
+334: Galuppi Baldassare
+335: Widor Charles-Marie
+336: Kreutzer Léon
+337: Fischer-Weber Paul
+338: Vollmer Federico
+339: Schubert Camille
+340: Volkmann Robert
+341: Dobyns Geraldine
+342: Halévy Fromental
+343: Cadman Charles Wakefield
+344: Pozzoli Ettore
+345: De Nito José
+346: Díaz Alejandro
+347: Godowsky Leopold
+348: Ferroud Pierre-Octave
+349: Herzogenberg Elisabeth von
+350: Kolb Ayala Angelina
+351: Nichifor Serban
+352: Melartin Erkki
+353: Bruckner Anton
+354: Kuliev Ramin
+355: Carroll Walter
+356: Strelezki Anton
+357: Orellana Ignatius de
+358: Lavallée Calixa
+359: Gonzaga Chiquinha
+360: Pierné Gabriel
+361: Menter Sophie
+362: Boëly Alexandre-Pierre-François
+363: Michałowski Aleksander
+364: Cui César
+365: Panormo Francis
+366: Lazare Martín
+367: Schulhoff Julius
+368: Debussy Claude
+369: Draeseke Felix
+370: Couperin François
+371: Molitor Franz Simon
+372: Engelmann Hans
+373: Caillebotte Martial
+374: Scarlatti Alessandro
+375: Autezac Léo d'
+376: Quijano Pedro Miguel
+377: Krein Grigory
+378: Besset Julian Raoul
+379: Dohnányi Ernő
+380: Masotti Celestina
+381: Bellak James
+382: Adams Ernest Harry
+383: Coedès-Mongin André
+384: Alburger Mark
+385: Stojowski Sigismond
+386: Ohe Adele aus der
+387: Rheinberger Josef Gabriel
+388: Kiel Friedrich
+389: Byng Frank D. B.
+390: Gibbons Orlando
+391: Richards Brinley
+392: Castelnuovo-Tedesco Mario
+393: Turner Joseph W.
+394: Leonard Robert
+395: Schreiner Hermann L.
+396: Indy Vincent d'
+397: Bridge Frank
+398: Ketten Henry
+399: Gozenpud Matvey
+400: Stanchinsky Aleksey
+401: Bortkiewicz Sergei
+402: Soriano Francesco
+403: Casalonga Marguerite
+404: Saminsky Lazare
+405: Pesse Maurice
+406: Bucalossi Ernest
+407: Losy Jan Antonin
+408: Di Gesu Massimo
+409: Fernández Oscar Lorenzo
+410: Frey E. H.
+411: Sabaneyev Leonid
+412: Prudent Émile
+413: Chabrier Emmanuel
+414: Harder August
+415: Koechlin Charles
+416: Vargas Guillaume
+417: Nollet Eugène
+418: Morley Thomas
+419: Jenks Alden
+420: Manookian Jeff
+421: Kuhlau Friedrich
+422: Sutter Heinrich
+423: Scharwenka Xaver
+424: Golinelli Stefano
+425: Sarcilla Glenn Patrick E.
+426: Ravel Maurice
+427: Tyers William H.
+428: Bernard Émile
+429: Novák Vítězslav
+430: Medeiros Anacleto de
+431: Weyse Christoph Ernst Friedrich
+432: Chamberlain Howard
+433: Ilyinsky Aleksandr
+434: Herz Henri
+435: Newton P. W.
+436: Neupert Edmund
+437: Martinez Marianne
+438: Hurlstone William Yeates
+439: Reger Max
+440: Ketterer Eugène
+441: Nepomuceno Alberto
+442: Derecskei András
+443: Gurney Ivor
+444: Dedieu-Péters Paul
+445: Bottazzo Luigi
+446: Zarębski Juliusz
+447: Lacombe Louis
+448: Casali Giovanni Battista
+449: Mendelssohn Felix
+450: Schnyder von Wartensee Franz Xaver
+451: Verotta Davide
+452: Seco de Arpe Manuel
+453: Baines William
+454: Scriabin Yulian
+455: Gouvy Louis Théodore
+456: Prisovsky Vasily
+457: Borodin Aleksandr
+458: Depret J.
+459: Geibel Adam
+460: Asioli Bonifazio
+461: Warren George William
+462: Elliott Percy
+463: Barratt Edgar
+464: Borch Gaston
+465: Yachshenko Taras
+466: Ruiz Espadero Nicolás
+467: Koczalski Raoul
+468: Seyfried Ignaz
+469: Olsen Ole
+470: Oesten Theodore
+471: Soler Antonio
+472: Merikanto Oskar
+473: Van Alstyne Egbert
+474: Strauss Eduard
+475: Pieczonka Albert
+476: Ferrari Carlotta
+477: Marmontel Antoine François
+478: Bechgaard Julius
+479: Calvo Luis Antonio
+480: Barrios Mangoré Agustín
+481: Bonnell Otto
+482: Raffy Louis
+483: Confrey Zez
+484: Bitzan Wendelin
+485: Myaskovsky Nikolay
+486: Leoncavallo Ruggiero
+487: Manfredini Vincenzo
+488: Cohen Jules
+489: Amengual René
+490: Galilei Vincenzo
+491: Zhilin Aleksey
+492: Pauer Ernst
+493: Vodery Will H.
+494: Spindler Fritz
+495: Kozeluch Leopold
+496: Roslavets Nikolay
+497: Maleingreau Paul de
+498: Fletcher Percy Eastman
+499: Lysenko Mykola
+500: Kullak Ernst
+501: Ascher Emil
+502: Slavenski Josip
+503: Rubinstein Nikolay
+504: Speer Daniel
+505: Ashton Algernon
+506: Ansorge Conrad
+507: Caldini Fulvio
+508: Muscat Karl
+509: Tena Manrique Abraham
+510: Rollins Clyde Thomas
+511: Zweig Otto
+512: Konyus Georgy
+513: Fragoso António
+514: Field John
+515: Baynes Sydney
+516: Löhr Frederic Nicholls
+517: Pedini Carlo
+518: Röntgen Julius
+519: Mack Edward
+520: Lehmann Liza
+521: Wollenhaupt Hermann Adolf
+522: Gael Henri van
+523: Arcas Julián
+524: Volbach Fritz
+525: Giuliani Mauro
+526: Shcherbachyov Vladimir
+527: Nicholson-Ward Alexander Robert
+528: Messager André
+529: Antipov Konstantin
+530: Aaron Michael
+531: Halphen Fernand
+532: Ugoletti Paolo
+533: Pfeifer Johann
+534: Rubinstein Anton
+535: Casella Alfredo
+536: Kroeger Ernest Richard
+537: Beyer Ferdinand
+538: Borne François
+539: Hinloopen Tooske
+540: Auzende Ange-Marie
+541: Delahaye Léon
+542: Claussmann Aloÿs
+543: Bachmann Georges
+544: Keresztury-Albert Zsolt
+545: Mason William
+546: Sauter Louis
+547: Solié Jean-Pierre
+548: Hofmann Richard
+549: Behr Franz
+550: Hopekirk Helen
+551: Baumfelder Friedrich
+552: Ludenhoff Martin
+553: Busoni Ferruccio
+554: Matthews Artie
+555: Blumenthal Paul
+556: Amadeo Gaetano
+557: Lenepveu Charles-Ferdinand
+558: Lincoln Harry J.
+559: Schütt Eduard
+560: Castillo David del
+561: Kozlov Illarion
+562: Reich Patrice
+563: Čiurlionis Mikalojus Konstantinas
+564: Reubke Julius
+565: Kalliwoda Johann Wenzel
+566: Friedemann Carl
+567: St. George Tucker Tui
+568: Adams Clifford
+569: Dulcken Ferdinand Quentin
+570: Rubini George Jervis
+571: Alden Bob
+572: Arnoud Jules
+573: Gershwin George
+574: Kafka Johann Nepomuk
+575: Paladilhe Émile
+576: Crabb Duane
+577: Machaut Guillaume de
+578: Boyle Tyler John
+579: Stahl William C.
+580: Lichner Heinrich
+581: Norris Albert Locke
+582: Lebierre Olivier
+583: Barbot Paul
+584: Haas Joseph
+585: Smit Maarten
+586: Lie Sigurd
+587: Lully Jean-Baptiste
+588: Niewiadomski Stanisław
+589: Henriques Fini
+590: Szántó Tivadar
+591: Chvála Emanuel
+592: Beauvois Fernande
+593: Rudolph Erzherzog
+594: Bergé Irénée
+595: Benjamin Arthur
+596: Shaporin Yury
+597: Schmidt Franz
+598: Kempinski Leo A.
+599: Ferrer José
+600: Bargiel Woldemar
+601: Huber Adolf
+602: Nevin Ethelbert
+603: Minot Adolf
+604: Kopylov Aleksandr
+605: Löhlein Georg Simon
+606: Rietz Leopold
+607: Lewin Gustav
+608: Samuel Harold
+609: Rimsky-Korsakov Nikolay
+610: Horváth Géza
+611: Toscanini Arturo
+612: Weckerlin Jean-Baptiste
+613: Spinacino Francesco
+614: Schytte Ludvig
+615: Thomé Francis
+616: Hollaender Victor
+617: Glière Reinhold
+618: St. Clair Richard
+619: Marieh Marieh
+620: Weiner Leó
+621: Grützmacher Friedrich
+622: Alain Albert
+623: Tellefsen Thomas Dyke Acland
+624: Beischer-Matyó Tamás
+625: Zhelobinsky Valery
+626: Parodi Ortega Luis Félix
+627: Bernard Paul
+628: Szymanowski Karol
+629: Rosenhain Jacob
+630: Ponce Manuel
+631: Della-Tolla Antoine
+632: Marsh Stephen Hale Alonzo
+633: Hofmann Heinrich
+634: Carulli Ferdinando
+635: Schoenberg Arnold
+636: Lee John H.
+637: Kontski Anton de
+638: Delcroix Léon
+639: Körling Felix
+640: Fried Joseph Nicholas
+641: Dussek Jan Ladislav
+642: Martinů Bohuslav
+643: Cowell Henry
+644: Żołnowski Maciej
+645: Merkel Gustav Adolf
+646: Rosas Juventino
+647: Carey Henry
+648: Forgues Émile
+649: Charbonnet Alice Ellen
+650: Holloway Jordan Murray
+651: Pinto Octávio
+652: Leschetizky Theodor
+653: Ives Charles
+654: Hofe Joachim von der
+655: Boëllmann Léon
+656: Fischer Tad
+657: Amthor Wilhelm
+658: Wright Lawrence
+659: Nehls Ulrich
+660: Liste Anton
+661: Henze Bruno Karl Ludwig
+662: Grothe George
+663: Negri Cesare
+664: Gumble Albert
+665: Sauer Emil von
+666: Cazenaud Jules
+667: Martucci Giuseppe
+668: Pitoni Giuseppe Ottavio
+669: Montgeroult Hélène
+670: Oswald Henrique
+671: Dianov Anton
+672: Pratt Paul Charles
+673: Infante Manuel
+674: Purcell Henry
+675: Wolff Édouard
+676: Bedetti Tiziano
+677: Lasson Per
+678: Verdalle Gabriel
+679: Mellinger Edward J.
+680: Chapí Ruperto
+681: Veprik Aleksandr
+682: Marcozzi Maurizio
+683: Hullah John
+684: Ockeghem Johannes
+685: Bach Carl Philipp Emanuel
+686: Offenbach Jacques
+687: Karolak Hans-Jürgen
+688: Ropartz Guy
+689: Rimsky-Korsakov Georgy
+690: Crawford Seeger Ruth
+691: Roussel Albert
+692: Dubois Théodore
+693: Cairos-Rego George de
+694: Bach Johann Christian
+695: Laparra Raoul
+696: Grunn Homer
+697: Bowden Mary
+698: Severo Marcello
+699: Gobbaerts Louis
+700: Varley Irene
+701: Spielter Hermann
+702: Elsner Józef
+703: Levey William Charles
+704: Tárrega Francisco
+705: Hering Karl Friedrich
+706: Saboohi Ehsan
+707: Pabst Paul
+708: Itazu Shoryu
+709: Ippolitov-Ivanov Mikhail
+710: Hime Edward Lawrence
+711: Caryll Ivan
+712: Dobrowen Issay
+713: Palestrina Giovanni Pierluigi da
+714: Comettant Oscar
+715: Seeling Hans
+716: Bobrowicz Jan Nepomucen
+717: Matys Karl
+718: Parera Blas
+719: Broustet Édouard
+720: Manjón Antonio Jimenez
+721: Gilson Paul
+722: Weidt Albert John
+723: Hodkinson Jack Richard
+724: Jacobi Karl
+725: Hewitt John Hill
+726: Iliev Grigor
+727: Moór Emanuel
+728: Lefebvre Charles
+729: Maykapar Samuil
+730: Kochetov Nikolay
+731: Rust Friedrich Wilhelm
+732: Farwell Arthur
+733: Reiser August Friedrich
+734: Krein Aleksandr
+735: Daniel Jules
+736: Henry J. Harold
+737: Enescu George
+738: Loeschhorn Albert
+739: Rangström Ture
+740: Gibsone Ignace
+741: Nobles Jordan
+742: Shaw Geoffrey Turton
+743: Mayerl Billy Joseph
+744: Csige Paul
+745: Sitt Hans
+746: Tournemire Charles
+747: Taneyev Sergey
+748: Missa Edmond
+749: Delucchi Emanuele
+750: Franz J.
+751: Rinck Christian Heinrich
+752: Elmas Stephan
+753: Held Will
+754: Blon Franz von
+755: Méreaux Jean-Amédée Lefroid de
+756: Selva Blanche
+757: Massimi Francesco
+758: Poulsen Brian Stenger
+759: Klein Bernhard
+760: Lazarus Gustav
+761: Chesneau Carl
+762: Gaul Konstantin Joachim
+763: Müller August Eberhard
+764: Utendal Alexander
+765: Hofmann Józef
+766: Mawson-Marks Charles
+767: Rowley Alec
+768: Goria Alexandre Édouard
+769: Fielitz Alexander von
+770: Hillemacher Lucien Joseph Edouard
+771: Bülow Hans von
+772: Stenhammar Wilhelm
+773: Schop Johann
+774: Tours Berthold
+775: Zabala Adolfo
+776: Cecchetti Paul
+777: Pryor Arthur
+778: Vlahek Bruno
+779: Guridi Jesús
+780: Barbetta Giulio Cesare
+781: Esmen Nurtan Alan
+782: Hiller Ferdinand
+783: Ladmirault Paul
+784: Zoeller Ernest
+785: Grant-Schaefer George Alfred
+786: Hill Mildred
+787: Ogiński Michał Kleofas
+788: Mayer Charles
+789: Bernheimer Gastone
+790: Paine John Knowles
+791: Badger W. P.
+792: Wille Rolf-Peter
+793: Kenwood Herriott Richard
+794: Ritzen Peter
+795: Krenkel Gustav
+796: Harding Alfred Harry
+797: Madetoja Leevi
+798: Mortelmans Lodewijk
+799: Pfeil Heinrich
+800: Braungardt Fridolin
+801: Peyer Johann Baptist
+802: Urspruch Anton
+803: Delaborde Elie Miriam
+804: Sveinbjörnsson Sveinbjörn
+805: Poise Ferdinand
+806: Götz Alois
+807: Willis Floyd
+808: Moretti Federico
+809: Pachelbel Johann
+810: Verdi Giuseppe
+811: Hägg Jacob Adolf
+812: Webbe Samuel
+813: Tinyakov Aleksandr
+814: Egghard Jules
+815: Lambert Constant
+816: Nathan Adolph
+817: Zink Stefan
+818: Fourdrain Félix
+819: Capellen Georg
+820: Hallé Charles
+821: Gregh Louis
+822: Peuerl Paul
+823: Cervantes Ignacio
+824: Landry Albert
+825: Lipatti Dinu
+826: Dupré Marcel
+827: Nemerovsky Aleksandr
+828: Korngold Erich Wolfgang
+829: Delius Frederick
+830: Rasse François
+831: Eriksen Olaf Emil
+832: Dett Robert Nathaniel
+833: Remiehleki D.
+834: Bazin François
+835: Marty Georges
+836: Casalaina Riccardo
+837: Kinross John
+838: Aulin Valborg
+839: Kölling Carl
+840: Thompson John Sylvanus
+841: Delacroix Auguste
+842: Viro Angel
+843: DeLano C. S.
+844: Talexy Adrien
+845: Stankovych Tatiana
+846: Skrzydlewski Jan
+847: Burgmüller Norbert
+848: Zemlinsky Alexander von
+849: Klein Fritz Heinrich
+850: Albert Charles d'
+851: Mirzazade Khayyam
+852: Schäfer Dirk
+853: Homilius Gottfried August
+854: Reissiger Carl Gottlieb
+855: Malipiero Gian Francesco
+856: Gabunia Nodar
+857: Borgstrøm Hjalmar
+858: Frescobaldi Girolamo
+859: Eisler Hanns
+860: Bruch Max
+861: Longo Alessandro
+862: Yon Pietro
+863: Kullak Theodor
+864: Shishov Ivan
+865: Kirnberger Johann Philipp
+866: Somervell Arthur
+867: Poldini Ede
+868: Lalo Édouard
+869: Hamilton Jesse J.
+870: Hoschna Karl L.
+871: Alnæs Eyvind
+872: Giordani Tommaso
+873: Wellesz Egon
+874: Wandelt Bruno
+875: Pridham John
+876: Brüll Ignaz
+877: Brandts Buys Jan
+878: Dédé Edmond
+879: Hanson Howard
+880: Rathaus Karol
+881: Antheil George
+882: Wilson Grenville Dean
+883: Gomes Carlos
+884: Toch Ernst
+885: Lynes Frank
+886: Pavia Isidore Leo
+887: Harney Benjamin Robertson
+888: Brochocka Katarzyna
+889: Antico Andrea
+890: Bull John
+891: Corder Paul
+892: Rummel Joseph
+893: Seitz Friedrich
+894: Reimer-Watts Keenan
+895: Jacchini Giuseppe Maria
+896: Klindworth Karl
+897: Pessard Émile
+898: Armstrong Peter McKenzie
+899: Vaughan Williams Ralph
+900: Pergolesi Giovanni Battista
+901: Costa Nogueras Vicente
+902: Wolf-Ferrari Ermanno
+903: Deshevov Vladimir
+904: Seeboeck Wilhelm Carl Ernst
+905: Koessler Hans
+906: Von Tilzer Harry
+907: Dowland John
+908: Nölck August
+909: Graun Karl Heinrich
+910: Duvernoy Henri Louis Charles
+911: Hägg Gustaf
+912: Alyabyev Aleksandr
+913: Comellas José
+914: Briegel Wolfgang Carl
+915: Widerkehr Jacques
+916: Goldenweiser Aleksandr
+917: Wolf Hugo
+918: Philipp Isidor
+919: Stief Holger
+920: Chauvet Alexis
+921: Lipski Stanisław
+922: Vilinsky Mykola
+923: Boisdeffre René de
+924: Ernst Leo
+925: Becker Wilhelm Gottlieb
+926: Moreno Sabio José Miguel
+927: Volborth Eugène von
+928: Bohnke Emil
+929: Carr Benjamin
+930: Cooke Waddington
+931: Gillet Ernest
+932: Frontini Martino
+933: Del Valle de Paz Edgardo
+934: Palmgren Selim
+935: Martinenghi Giovanni
+936: Nie Er
+937: Gatti Walter
+938: Kramer A.
+939: Gelinek Joseph
+940: Kjerulf Halfdan
+941: Kalafati Vasily
+942: Barbirolli Alfredo
+943: Kiefert Carl
+944: Lachner Franz Paul
+945: Kogel Gustav Friedrich
+946: Kosenko Viktor
+947: Newland Robert A.
+948: Carman Marius
+949: Catoire Georgy
+950: Kotka Hannes
+951: Taki Rentarō
+952: Inghelbrecht Désiré Émile
+953: Berger Ludwig
+954: Nizhankovsky Nestor
+955: Corini Giovanni
+956: Robinson J. Russel
+957: Küssner Albert
+958: Kämmerer Carl
+959: Zelter Carl Friedrich
+960: Bourgault-Ducoudray Louis-Albert
+961: Dall'Aquila Marco
+962: Schlözer Pavel
+963: Audran Edmond
+964: Levy Sol Paul
+965: Damas Tomás
+966: Żeleński Władysław
+967: Joncières Victorin de
+968: Villanueva Felipe
+969: Sgambati Giovanni
+970: Bonnal Ermend
+971: Besozzi Louis-Désiré
+972: Bergson Michał
+973: Wot Felix Firmiana
+974: Bauersachs Hubert
+975: Levitzki Mischa
+976: Griffes Charles Tomlinson
+977: Kunzen Friedrich Ludwig Aemilius
+978: Braga Gaetano
+979: Guzmán Frías Federico
+980: Ganne Louis
+981: Neustedt Charles
+982: Riotte Philipp Jakob
+983: Hartung Carl Friedrich
+984: Garayev Gara
+985: Pickering Jane
+986: Lingenberg Wilfried
+987: Dennée Charles
+988: Krenek Ernst
+989: Neff Lyle K.
+990: Anerio Felice
+991: Holzmann Abe
+992: Kowalski Henri
+993: Schiavone Mauro
+994: Sibelius Jean
+995: Price David
+996: Bateman William O.
+997: Morrison Charles Summer
+998: Seamon R. L.
+999: Clutsam George Howard
+1000: Kunz Konrad Max
+1001: Brier Ella
+1002: Dreyschock Alexander
+1003: Lekeu Guillaume
+1004: Jordan Joe
+1005: Chován Coloman
+1006: Adler Vincent
+1007: Maszyński Piotr
+1008: Spassov Vassil
+1009: Köhler Louis
+1010: Pearson Kevin
+1011: Holmsen Borghild
+1012: Vilbac Renaud de
+1013: Bądarzewska-Baranowska Tekla
+1014: Zintl Frank
+1015: Horn C. von
+1016: Shcherbachyov Nikolay
+1017: Barat Joseph Edouard
+1018: Schwartz Jean
+1019: Colaço Alexandre Rey
+1020: Tailleferre Germaine
+1021: Vierne Louis
+1022: Zandonai Riccardo
+1023: Tagliapietra-Carreño Teresita
+1024: Massa Juan Bautista
+1025: Morena Camillo
+1026: Sinding Christian
+1027: Zimay László
+1028: Luigini Alexandre
+1029: Lodge Henry
+1030: Taubert Wilhelm
+1031: Sweelinck Jan Pieterszoon
+1032: Logé Henri
+1033: Kan-no Shigeru
+1034: Périlhou Albert
+1035: Coquard Arthur
+1036: Merkling Georges
+1037: Sixt Johann Abraham
+1038: Szymanowska Maria Agata
+1039: Snyder Ted
+1040: Hall Frederick
+1041: Becker John J.
+1042: Sanderson Wilfred
+1043: Salzedo Carlos
+1044: Gabrieli Andrea
+1045: Braham Edmund
+1046: Concone Giuseppe
+1047: Dolmetsch Victor
+1048: Bull Georges
+1049: Bentivoglio Giulio
+1050: Bach Wilhelm Friedemann
+1051: Weiss Sylvius Leopold
+1052: Lamothe Georges
+1053: Chausson Ernest
+1054: Farrenc Louise
+1055: Coote Charles
+1056: Kalachevsky Mikhail
+1057: Pujol Joan Baptista
+1058: Goetz Hermann
+1059: Jadassohn Salomon
+1060: Marcolesco D.J.
+1061: Milhaud Darius
+1062: Brown Sid
+1063: O'Kelly Joseph
+1064: La Rue Pierre de
+1065: Mennechet de Barival Henriette-Caroline
+1066: Gustafson A. F. S.
+1067: Loder Edward James
+1068: Polla William Conrad
+1069: Bellando Domenico
+1070: Ryelandt Joseph Victor Marie
+1071: Delmas Marc
+1072: Silcher Friedrich
+1073: Larregla Joaquín
+1074: Surzyński Mieczysław
+1075: Bloch Ernest
+1076: Fernández Horacio
+1077: Schmitt Jacob
+1078: Bach Johann Christoph Friedrich
+1079: Weyrauch August Heinrich von
+1080: Achron Joseph
+1081: Coenen Willem
+1082: Tosti Francesco Paolo
+1083: Smith Boyton
+1084: Kralik Mathilde
+1085: Hadley Henry Kimball
+1086: Xu Xavier Shuang
+1087: Sagreras Julio Salvador
+1088: Friedman Ignaz
+1089: Alais Juan
+1090: De Boni Marco
+1091: Aubert Pierre François Olivier
+1092: Stith David Joseph
+1093: Viñas José
+1094: Blanchet Emile-Robert
+1095: Wallace William Vincent
+1096: Ricordi Giulio
+1097: Nielsen Ludolf
+1098: Mozart Leopold
+1099: Gallet Luciano
+1100: Battell W. L.
+1101: Usandizaga José María
+1102: Levin Miron
+1103: Boeck August de
+1104: Zhang Yanpeng
+1105: Lemaire Gaston
+1106: Bosch Jacques
+1107: Lotti Antonio
+1108: Tolsa Carlos Garcia
+1109: Von Tilzer Albert
+1110: Horn C. L.
+1111: Fischhof Robert
+1112: Dieren Bernard van
+1113: Zelenka Jan Dismas
+1114: Keyhani Karen
+1115: Duncombe William
+1116: Todt Johann August Wilhelm
+1117: Simon Walter Cleveland
+1118: Chwatal Franz Xaver
+1119: Aitken George
+1120: Milán Luis
+1121: Saint-Saëns Camille
+1122: Gedike Aleksandr
+1123: Cottin Alfred
+1124: Ponchielli Amilcare
+1125: Puccini Giacomo
+1126: Vanhal Johann Baptist
+1127: Kalliwoda Wilhelm
+1128: Kirchner Fritz
+1129: Scholtz Herrmann
+1130: Besly Maurice
+1131: Bénet Charles
+1132: Schale Christian Friedrich
+1133: Kendall Edwin F.
+1134: Nacci Andrea Antonello
+1135: Mompou Federico
+1136: Oehler Fred O.
+1137: Albert Eugen d'
+1138: González del Valle Anselmo
+1139: Schreiber Robin
+1140: Echeverría José María
+1141: Bragina Irina
+1142: Spencer E. B.
+1143: Carreño Teresa
+1144: Chenet Alfred
+1145: Chevrier Valentine
+1146: Dunhill Thomas
+1147: Kaski Heino
+1148: John Charles
+1149: Junck Christian
+1150: Cuvelard Georges
+1151: Nikolayev Leonid
+1152: Fibich Zdeněk
+1153: Kodály Zoltán
+1154: Lanner Joseph
+1155: Losey Frank Hoyt
+1156: McEwen John Blackwood
+1157: Petersenn Georg von
+1158: Aksakov Sergey
+1159: Kock Karl
+1160: Fallen Jeff
+1161: Onslow George
+1162: Pijper Willem
+1163: Tarenghi Mario
+1164: Déjardin Renaud
+1165: Johnsen Hinrich Philip
+1166: Kaprálová Vítězslava
+1167: Drumheller Louis A.
+1168: Henriques Robert
+1169: Bovy-Lysberg Charles Samuel
+1170: Marchesi Mathilde
+1171: Ollone Max d'
+1172: Seeligson Edwina
+1173: Decq Adhemar
+1174: O'Neill Norman
+1175: Knina Leonid
+1176: Nápravník Eduard
+1177: Kern Karl Wilhelm
+1178: Gussago Cesario
+1179: Rønnes Robert
+1180: Zeuner Charles
+1181: Stark Etilmon Justus
+1182: Labrecque Denis G.
+1183: Quidant Alfred
+1184: Call Leonhard von
+1185: Gänschals Carl
+1186: Krüger Wilhelm
+1187: Daquin Louis-Claude
+1188: Mansion Horace
+1189: Gardner John Twiname
+1190: Lampe Jens Bodewalt
+1191: Schjelderup Mon
+1192: Fischer Johann Caspar Ferdinand
+1193: Chevillard Camille
+1194: Kelly Frederick Septimus
+1195: De Bleser Werner J.E.
+1196: Appenzeller Benedictus
+1197: Joseffy Rafael
+1198: Pasternak Boris
+1199: Kumar Ramana
+1200: Massaino Tiburtio
+1201: Dorn Alexander Julius Paul
+1202: Ludwig Wenzel
+1203: Berlin Irving
+1204: Ancliffe Charles
+1205: Teixeira Guimarães João
+1206: Verley Henri
+1207: Catalani Alfredo
+1208: Magnenat Stéphane
+1209: Bartlett Homer Newton
+1210: Isaac Heinrich
+1211: Segni Giulio
+1212: Billema Raffaele
+1213: Eiges Konstantin
+1214: Alferaki Achilles
+1215: Breimo Bjørn
+1216: Harriss Charles Albert Edwin
+1217: Walsh Mary E.
+1218: Berg Alban
+1219: Kappey Cecil
+1220: Schulhoff Erwin
+1221: Piaggio Celestino
+1222: Lemoine Henry
+1223: Bellenot Philippe
+1224: Binet Frédéric
+1225: Guimet Émile
+1226: René Charles
+1227: Zwart Jan
+1228: Schiffmacher Joseph
+1229: Williams Frederick Arthur
+1230: Lavater Louis
+1231: Holst Matthias
+1232: Buongiovanni Giovanni Francesco
+1233: Hartmann Arthur
+1234: Tucker Henry L.
+1235: Collin Charles
+1236: Simon Ernst
+1237: Skalkottas Nikos
+1238: Rosse Frederick
+1239: Bass Roderich
+1240: Weingartner Felix
+1241: Martínez Rücker Cipriano
+1242: Copland Aaron
+1243: Morton Jelly Roll
+1244: Lenzberg Julius
+1245: Winter-Hjelm Otto
+1246: Lamb Aidan
+1247: Clark Scotson
+1248: Soro Enrique
+1249: Carreras Arthur
+1250: Sowerby Leo
+1251: Boyle George Frederick
+1252: Schmitt Alphonse
+1253: Broca José
+1254: Bial Rudolf
+1255: Brian Havergal
+1256: Pfeiffer Georges Jean
+1257: Castillon Alexis de
+1258: Luchesi Andrea
+1259: Pugno Raoul
+1260: Luebert Gustav H.
+1261: Zawadzki Michał
+1262: Hasse Johann Adolph
+1263: Marpurg Friedrich Wilhelm
+1264: Berge Sigurd
+1265: Handrock Julius
+1266: Bedoya Harold
+1267: Hewitt Thomas James
+1268: Kuntze Carl
+1269: Dahl Viking
+1270: Parish-Alvars Elias
+1271: Harrer Gottlob
+1272: Lennox Lindsay
+1273: Candotti Giovanni Battista
+1274: Sołtys Mieczysław
+1275: Ingle Charles
+1276: Kondo Kohei
+1277: Freitas Branco Luís de
+1278: Nedbal Oskar
+1279: Heins Carl
+1280: Bossi Marco Enrico
+1281: Gould Joseph
+1282: Telemann Georg Philipp
+1283: Membrée Edmond
+1284: Soupelin Meliton George
+1285: Bartel Günther
+1286: Gallay Jacques François
+1287: Damse Józef
+1288: Cuello Piraquibis Adrián Antonio
+1289: Krzyżanowska Halina
+1290: Brugnoli Attilio
+1291: Giannotti Alessandro
+1292: Kennedy Amanda
+1293: Dorn Charles James
+1294: Krentzlin Richard
+1295: Marcou Paul
+1296: Bianciardi Francesco
+1297: Charlot Jacques
+1298: Crecquillon Thomas
+1299: Shaeffer Arling
+1300: Sternberg Constantin von
+1301: Martin Easthope
+1302: Slimobich Felipe
+1303: Magnus Desiré
+1304: Alexandra Liana
+1305: Mattos Fernando
+1306: Abreu Zequinha
+1307: Boccherini Luigi
+1308: Gussakovsky Apollon
+1309: Seymer William
+1310: Tierney Harry
+1311: Adalid Marcial del
+1312: Krebs Johann Ludwig
+1313: Delafosse Léon
+1314: Kalinnikov Vasily
+1315: Hannikainen Väinö
+1316: Logan Frederic Knight
+1317: Arévalo Miguel Santiago
+1318: Ismagilov Timur
+1319: Rolfe Walter
+1320: Nye E. K.
+1321: Grisar Albert
+1322: Yamada Kōsaku
+1323: Park Maria Hester
+1324: Barthélemy Richard
+1325: Obukhov Nikolay
+1326: Adams Mrs. Crosby
+1327: Parry Charles Hubert Hastings
+1328: Arnaud Étienne
+1329: Flodin Karl
+1330: Herbert Charles K.
+1331: Paderewski Ignacy Jan
+1332: Matthey Ulisse
+1333: Fries Albin
+1334: Schulz-Beuthen Heinrich
+1335: Souza Bernardino Belém de
+1336: Kügele Richard
+1337: Cabanilles Juan
+1338: Lebeau Alfred
+1339: Vianna da Motta José
+1340: Meyer Leopold de
+1341: Cras Jean
+1342: Hayden C. V.
+1343: Werner Auguste
+1344: Nicodé Jean Louis
+1345: Arakelian Grigor
+1346: Mudarra Alonso
+1347: Holst Gustav
+1348: Tedesco Ignaz
+1349: Pozzi Luigi
+1350: Eilenberg Richard
+1351: Moncayo José Pablo
+1352: Bouillet Jean-Marc
+1353: Chomentowski Stanislas
+1354: Bruneau Alfred
+1355: Chizat Emile
+1356: Kruchoski Alexander
+1357: Klauwell Otto
+1358: Macfarren Walter
+1359: Moeran Ernest John
+1360: Nagata Toshi
+1361: Scard Antoine
+1362: Herzogenberg Heinrich von
+1363: Malinowski Stefan
+1364: Rée Anton
+1365: Bartalus István
+1366: Fischer August Gottlob
+1367: Müller-Hermann Johanna
+1368: Wroński Adam
+1369: Itiberê Brasílio
+1370: Stier Walter C.
+1371: Humperdinck Engelbert
+1372: Anerio Giovanni Francesco
+1373: Lafrenière Jean-Baptiste
+1374: Jakobowski Edward
+1375: Gumpelzhaimer Adam
+1376: Thuille Ludwig
+1377: Ranzato Virgilio
+1378: Fodor Carel Anton
+1379: Kistler Cyrill
+1380: Marescot Charles de
+1381: Pfeiffer Gregory Carl
+1382: Samazeuilh Gustave
+1383: Hook James
+1384: Nerini Émile
+1385: Viger François
+1386: Revueltas Silvestre
+1387: Aguirre Julián
+1388: Woolford Hughe
+1389: Coste Napoléon
+1390: Gracey Maurice
+1391: Dowland Robert
+1392: Trombetti Ascanio
+1393: Pacini Giovanni
+1394: Callado Joaquim
+1395: Niemann Georg
+1396: Niemann Rudolf
+1397: Strauss Franz
+1398: King of France Louis XIII
+1399: Cottrau Teodoro
+1400: Foote Arthur
+1401: Alary Joseph
+1402: Rice W. M.
+1403: Cavalcanti Aurélio
+1404: Rockstro William Smith
+1405: Strater Tillmann
+1406: Smith Walter Wallace
+1407: Lindahl Albert
+1408: Drew Harry
+1409: Brassin Louis
+1410: Lucas Clarence
+1411: Carpenter John Alden
+1412: Walter Jules
+1413: Heuser Ernst
+1414: Vidal Paul
+1415: Dārziņš Volfgangs
+1416: Bath Hubert
+1417: Canteloube Joseph
+1418: Vierne René
+1419: Lorenz Julius
+1420: Casadesus Robert-Guillaume
+1421: Guerrero Francisco
+1422: Whiting Richard Armstrong
+1423: Moelling Theodore
+1424: David Ferdinand
+1425: Farnaby Giles
+1426: Bugge Magda
+1427: Mason Daniel Gregory
+1428: Cairos-Rego Rex de
+1429: Ekert Matias
+1430: Rameau Jean-Philippe
+1431: Willmers Rudolf
+1432: Hemery Valentine
+1433: Fine Vivian
+1434: Jadin Hyacinthe
+1435: Rivé-King Julie
+1436: Whiting Arthur Battelle
+1437: Torrance Leo
+1438: Schwartz Heinrich
+1439: Byrd William
+1440: Bowman Euday L.
+1441: Deldevez Édouard Marie Ernest
+1442: Noack Kurt
+1443: Petyrek Felix
+1444: Kleven Arvid
+1445: Goltz Boris
+1446: Kinkel Charles
+1447: Tansman Alexandre
+1448: Weelkes Thomas
+1449: Costello Andy
+1450: Zamecnik John Stepan
+1451: Calvi Carlo
+1452: Toselli Enrico
+1453: Sullivan Arthur
+1454: Volckmar Tobias
+1455: Glaesz Alexander von
+1456: Czibulka Alphons
+1457: Pasquini Bernardo
+1458: Bortniansky Dmytro
+1459: Ronald Landon
+1460: Blockx Jan
+1461: MacCunn Hamish
+1462: Strong George Templeton
+1463: Smith Wilson
+1464: Gall Jan Karol
+1465: Stanford Charles Villiers
+1466: Kilner William Alexander
+1467: Anderson George
+1468: Osborne George Alexander
+1469: Martini Johannes
+1470: Carafa Michele
+1471: Meinardus Ludwig Siegfried
+1472: Clarke Robert Coningsby
+1473: Bret Émile
+1474: Kufferath Hubert Ferdinand
+1475: Delbruck Georges
+1476: A. Jag
+1477: Sayn-Wittgenstein Eugen von
+1478: Durey Louis
+1479: Garratt Percival
+1480: Hallman Joseph
+1481: Nenov Dimitar
+1482: Dessau Bernhard
+1483: Andrée Elfrida
+1484: Malats Joaquín
+1485: Elorduy Ernesto Medina
+1486: Whithorne Emerson
+1487: Brosig Moritz
+1488: Kontski Stanisław de
+1489: Borowski Felix
+1490: Lessel Franciszek
+1491: Ocón Eduardo
+1492: Troyer Carlos
+1493: Jaëll Marie
+1494: Cilea Francesco
+1495: Hayasaka Fumio
+1496: Mankell Henning
+1497: Vecchi Orazio
+1498: Hasselmans Alphonse
+1499: Barnett John Francis
+1500: Hamilton Gregory
+1501: Stefani Józef
+1502: Zarzycki Aleksander
+1503: Williams Alberto
+1504: Lang Margaret Ruthven
+1505: Corteccia Francesco
+1506: Bomtempo João Domingos
+1507: Kuiler Kor
+1508: Bihari János
+1509: Snow F.H.
+1510: Kreutzer Joseph
+1511: Döhler Theodor
+1512: Tigranian Nikoghayos
+1513: Collinge Frederick Channon
+1514: Lane Eastwood
+1515: Tofft Alfred
+1516: Barnby Joseph
+1517: Rose Cyrille
+1518: Dušek František Xaver
+1519: Eberl Anton
+1520: Roeder Karl
+1521: Wright Nannie Louise
+1522: Joteyko Tadeusz
+1523: Lehrer Oscar J.
+1524: Hauer Josef Matthias
+1525: Mendelssohn Arnold
+1526: Hering Carl Gottlieb
+1527: Kuula Toivo
+1528: Huss Henry Holden
+1529: Lecocq Charles
+1530: Schiavoni Ramiro
+1531: Brink Gustaf Hildor
+1532: Vanderbeck F. E.
+1533: Bloch József
+1534: Quiroz Alcántara Mario
+1535: Hammerschmidt Andreas
+1536: Shmarygin Ivan
+1537: Brinkmann Minna
+1538: Béesau Joseph
+1539: Wöhrmann C.
+1540: Bassi Luigi
+1541: Pellejer David
+1542: Haarklou Johannes
+1543: Alkan Maxime
+1544: Facoli Marco
+1545: Griboyedov Aleksandr
+1546: Rotta Antonio
+1547: Lincke Paul
+1548: Hunter Charles
+1549: Buxtehude Dietrich
+1550: Wilson Garfield
+1551: Krieger Johann
+1552: Brogi Renato
+1553: Porrino Ennio
+1554: Carrasco Alfredo
+1555: Alombert Jeanne
+1556: Waller Fats
+1557: Shepherd Adaline
+1558: Clérice Justin
+1559: Huber Hans
+1560: Drumheller Charles
+1561: Glass Louis
+1562: Kronke Emil
+1563: Talbot Howard
+1564: Fux Johann Joseph
+1565: Petering Mark
+1566: Sowinski Albert
+1567: Łodwigowski Edward Stefan
+1568: Verhelst Steven
+1569: Wiel Elise
+1570: Stiehl Heinrich
+1571: Miguez Leopoldo
+1572: Collin Hélène
+1573: Drangosch Ernesto
+1574: Roberts Leland Stanford
+1575: Morelowski Ludwik
+1576: Bossinensis Franciscus
+1577: Pérez Freire Osmán
+1578: Gautier Léonard
+1579: Graupner Christoph
+1580: Dobrzyński Ignacy Feliks
+1581: Keller Otto
+1582: Resch Johann
+1583: Faure Jean-Baptiste
+1584: Lowthian Caroline
+1585: Schoonenbeek Kees
+1586: Janza Mark
+1587: Orth John
+1588: Kochurov Yury
+1589: Sardelli Federico Maria
+1590: Buchner Hans
+1591: Price Florence
+1592: Hinton Arthur
+1593: Pozzo Vincenzo dal
+1594: Ager Milton
+1595: Demersseman Jules
+1596: Clérambault E.
+1597: Mertz Johann Kaspar
+1598: Bishop Henry Rowley
+1599: Doucet Clément
+1600: Greenwood Clara
+1601: Milano Francesco da
+1602: Nägeli Hans Georg
+1603: McKay Dosia
+1604: Leifs Jón
+1605: Rosenthal Moriz
+1606: Fry James
+1607: Franck Melchior
+1608: Peters Friedrich
+1609: Porumbescu Ciprian
+1610: Smith Chris
+1611: Beck Julius
+1612: Cifra Antonio
+1613: Varèse Edgard
+1614: Yevseyev Sergey
+1615: Aledo M.
+1616: Hambourg Mark
+1617: Paulus Olaf
+1618: Zavadil Ondřej
+1619: Guiraud Georges
+1620: Martirosyan Levon
+1621: Dressler William
+1622: Mariani Luis Leandro
+1623: Wieck Marie
+1624: Allende Pedro Humberto
+1625: Koffler Józef
+1626: Shekhter Boris
+1627: Guelbenzu José
+1628: Chirichella Francesco
+1629: Pollack Lew
+1630: Rohde Eduard
+1631: Brzeziński Franciszek
+1632: Ferner Anthony
+1633: Lyatoshinsky Boris
+1634: Panofka Heinrich
+1635: Labriola Pietro
+1636: Jackson Jonathan
+1637: Matosinhos Ricardo
+1638: Lassus Orlande de
+1639: Davidson Robert
+1640: Flotow Friedrich von
+1641: Morris Arthur
+1642: Neal Heinrich
+1643: Bodom Erika
+1644: Pinto Angelo Francis
+1645: Hüe Georges
+1646: David Adolphe
+1647: Gabrieli Giovanni
+1648: Merenzeine Vazel
+1649: Wang Shubo
+1650: Blitzstein Marc
+1651: Caplet André
+1652: Járay-Janetschek István
+1653: Montgomery William Augustus
+1654: Couceiro Paulo
+1655: Bohlmann Georg Carl
+1656: Shenshin Aleksandr
+1657: Hässler Johann Wilhelm
+1658: Taubert Ernst Eduard
+1659: Cook Will Marion
+1660: Chadwick George Whitefield
+1661: Vincent IV Teo
+1662: Egeberg Anna-Louise
+1663: Murphy Hilda Romer
+1664: Oesten Max
+1665: Coates Eric
+1666: Ivanovici Iosif
+1667: Dezède Nicolas
+1668: Staub Victor
+1669: Minkus Ludwig
+1670: Rosellen Henri
+1671: Buonamici Giuseppe
+1672: Kirchhoff Gottfried
+1673: Elling Catharinus
+1674: Margis Alfred
+1675: Cortez Melchior
+1676: Rogers Van Veachton
+1677: Möhring Ferdinand
+1678: Oldberg Arne
+1679: Kleinmichel Richard
+1680: Silberberg J. Alexander
+1681: Burgmüller Franz
+1682: Song Kio
+1683: Spohr Louis
+1684: Auric Georges
+1685: Sokolov Alexander
+1686: Janáček Leoš
+1687: Jacinto Javier
+1688: Barth Richard
+1689: Pizzetti Ildebrando
+1690: Kölling Adolph
+1691: Bacon E. B.
+1692: Voss Charles
+1693: Liberati Alessandro
+1694: Baron Maurice
+1695: Ituarte Julio
+1696: Díaz Peña Sebastián
+1697: Butler Paul
+1698: Pfund Annie K.
+1699: Sherwood William H.
+1700: Rhené-Baton Emmanuel
+1701: Witthauer Johann Georg
+1702: Dovicchi João Cândido
+1703: Cavallo Peter
+1704: Wilson Mortimer
+1705: Marston George
+1706: Werner Oscar
+1707: Wohlfart Karl
+1708: Soria Luis de
+1709: Eppel John Valentine
+1710: Jacobs Robert Walter
+1711: Lányi Ernő
+1712: Le Cocq François
+1713: Hessen-Kassel Moritz von
+1714: Krasev Mikhail
+1715: Rubinstein Beryl
+1716: Sokolov Nikolay
+1717: Türk Daniel Gottlob
+1718: Bertholdt Charles C.
+1719: Hood Micah
+1720: Lavignac Albert
+1721: Boscovitz Frédéric
+1722: Quevedo Zornoza Guillermo
+1723: Lachner Vinzenz
+1724: Reicha Anton
+1725: Haslinger Carl
+1726: Cappelen Christian
+1727: Major John Herbert
+1728: Oma Rønnes Kristian
+1729: Jaëll Alfred
+1730: Oyanarte Ricardo
+1731: Lufer Bernhard
+1732: Krebs Johann Nicolaus
+1733: Reichardt Johann Friedrich
+1734: Kashperova Leokadiya
+1735: Muder George
+1736: Mathé Edouard
+1737: Burg Richard
+1738: Anton Friedrich Max
+1739: Esnaola Juan Pedro
+1740: Ziring Vladimir Alexandrovich
+1741: Balbastre Claude-Bénigne
+1742: Martínez García Salvador
+1743: Szalit Paula
+1744: Albery Dorothy
+1745: Rossi Luigi
+1746: Shoemaker Craig
+1747: Schmitt Aloys
+1748: Aquabella Ramon
+1749: Ewald Victor
+1750: Andersen Harris
+1751: Rysler Fréderic
+1752: Ganz Wilhelm
+1753: Sekles Bernhard
+1754: Lege Wilhelm
+1755: Meyer-Olbersleben Max
+1756: Marschner Heinrich
+1757: Kelley Edgar Stillman
+1758: Håkanson Knut
+1759: Colberg Paul
+1760: Donaldson Walter
+1761: Lubomirski Władysław
+1762: Guilmant Alexandre
+1763: Ajith Sriram
+1764: Petrie George
+1765: Defournaux A.
+1766: Koreshchenko Arseny
+1767: Nobutoki Kiyoshi
+1768: Frommel H.C.
+1769: Dumas Louis
+1770: Ivanov-Boretsky Mikhail
+1771: Blake Charles Dupee
+1772: Peel Graham
+1773: Nebling Emil
+1774: Newman Chas. J.
+1775: Adams G. W.
+1776: Schuster Joseph
+1777: Witmark Isidore
+1778: Dalayrac Nicolas
+1779: Maasalo Armas
+1780: Handy W. C.
+1781: Bach Leonhard Emil
+1782: Lindgreen Charles
+1783: Ansell John
+1784: Class Franklin Morris
+1785: Breidenstein Heinrich Carl
+1786: Decaux Abel
