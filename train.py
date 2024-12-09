@@ -18,7 +18,7 @@ def train(
     # Instantiate the model
     model = SiaViT(
         embedding_dim=128,
-        data_dir='./data',
+        data_dir='./data/expon_decay',
         t=TICKS_PER_MINUTE,
         o=6,
         batch_size=batch_size,

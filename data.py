@@ -8,11 +8,13 @@ from itertools import combinations
 import pytorch_lightning as pl
 
 class MIDIDataset(Dataset):
-    def __init__(self, data_dir, t, split='train', test_size=0.2, random_state=42, pair_type='mixed'):
+    def __init__(self, data_dir, t, split='train', test_size=0.2, random_state=42, pair_type='mixed', add_noise_amt=0., mult_noise_amt=0.):
         self.t = t
         self.data_dir = data_dir
         self.split = split
         self.pair_type = pair_type
+        self.add_noise_amt = add_noise_amt
+        self.mult_noise_amt = mult_noise_amt
 
         # Load data
         with warnings.catch_warnings():
@@ -187,4 +189,9 @@ class MIDIDataset(Dataset):
             pad_left_tensor = torch.zeros((C, O, pad_left))
             pad_right_tensor = torch.zeros((C, O, pad_right))
             sample = torch.cat([pad_left_tensor, sample, pad_right_tensor], dim=2)
+        if self.is_train:
+            if self.add_noise_amt:
+                sample += self.add_noise_amt * torch.rand_like(sample)
+            if self.mult_noise_amt:
+                sample *= 1 + self.mult_noise_amt * torch.rand_like(sample)
         return sample
