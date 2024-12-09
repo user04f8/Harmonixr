@@ -6,5 +6,9 @@ einops
 tensorboard
 tensorboardX
 plotly
+scikit-learn
 tqdm
 fire
+mido
+pillow
+tqdm

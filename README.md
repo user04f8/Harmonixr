@@ -84,6 +84,9 @@ Interestingly, we observe a consistent trend across diverse hyperparameters and 
 
 In order to reproduce our result, follow the below steps:
 
- - `pip install -r requirements.txt`
- - Unzip `data.zip` to `data/*.*`
- - `python train.py`
+ - Read the required disclaimer, and follow the directions to down the dataset [here](https://github.com/bytedance/GiantMIDI-Piano/blob/master/disclaimer.md). 
+ - Extract the folder within surname_checked_midis.zip named "surname_checked_midis" into the parent directory, so that the midi files are stored at ./surname_check_midis/*.mid
+ - `make install` (creates a virtual environment and installs requirements)
+ - `make preprocess` (runs the preprocessing on the midi files)
+
+In order to delete the virtual environment, run `make clean`, or `make reinstall` if reinstallation is needed. 
