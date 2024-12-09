@@ -12,3 +12,16 @@ harmonyenv/
 
 # TODO: add data download directions
 # TODO: restructure entirely
+
+# vite file ignores:
+vite-project/logs
+vite-project/*.log
+vite-project/npm-debug.log*
+vite-project/yarn-debug.log*
+vite-project/yarn-error.log*
+vite-project/pnpm-debug.log*
+vite-project/lerna-debug.log*
+vite-project/node_modules
+vite-project/dist
+vite-project/dist-ssr
+vite-project/*.local
