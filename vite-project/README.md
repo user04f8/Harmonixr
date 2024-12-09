@@ -13,3 +13,4 @@ TODO:
 - beautify buttons
 - controls indication
 - off-center graph
+- fix file structuring, plot repetition in repo
