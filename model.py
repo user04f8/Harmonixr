@@ -422,7 +422,7 @@ class SiaViT(pl.LightningModule):
         """
         Returns the training dataloader.
         """
-        train_dataset = MIDIDataset(self.hparams.data_dir, self.hparams.t, split='train', *self.data_hparams)
+        train_dataset = MIDIDataset(self.hparams.data_dir, self.hparams.t, split='train', add_noise_amt=self.data_hparams[0], mult_noise_amt=self.data_hparams[1])
         return DataLoader(train_dataset, batch_size=self.hparams.batch_size, shuffle=True, num_workers=NUM_WORKERS_PER_DATALOADER)
 
     def training_step(self, batch, batch_idx):
