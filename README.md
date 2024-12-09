@@ -88,5 +88,6 @@ In order to reproduce our result, follow the below steps:
  - Extract the folder within surname_checked_midis.zip named "surname_checked_midis" into the parent directory, so that the midi files are stored at ./surname_check_midis/*.mid
  - `make install` (creates a virtual environment and installs requirements)
  - `make preprocess` (runs the preprocessing on the midi files)
+ - `make train` (begins model training)
 
 In order to delete the virtual environment, run `make clean`, or `make reinstall` if reinstallation is needed. 

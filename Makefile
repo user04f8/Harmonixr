@@ -7,6 +7,9 @@ install:
 preprocess:
 	./harmonyenv/bin/python3 preprocessing.py
 
+train:
+	./harmonyenv/bin/python3 train.py
+
 clean:
 	rm -rf harmonyenv
 

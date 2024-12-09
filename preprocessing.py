@@ -117,6 +117,8 @@ def process_midi_folder(folder_path, time_resolution_ms=10):
 
     # Get list of all MIDI files
     midi_files = [f for f in os.listdir(folder_path) if f.endswith('.mid')]
+
+    #midi_files = midi_files[0:20]
     
     # Parse files with a progress bar
     for filename in tqdm(midi_files, desc="Processing MIDI files"):
@@ -134,16 +136,19 @@ def process_midi_folder(folder_path, time_resolution_ms=10):
 
     # Save composer embedding vector as a tensor
     composer_vector = torch.tensor(composer_ids, dtype=torch.long)
-    
+    data_dir = os.path.dirname("./data/composer_mapping.txt")
+    os.makedirs(data_dir, exist_ok=True)
     # Save composer-to-id mapping
-    with open("composer_mapping.txt", "w") as f:
+    with open("./data/composer_mapping.txt", "w") as f:
         for composer, composer_id in composer_to_id.items():
             f.write(f"{composer}\n")
     
     return piece_arrays, composer_vector, piece_names
 
-def save_tensor(piece_arrays, composer_vector, piece_names, tensor_path="midi_pieces.pt", composer_vector_path="composer_vector.pt", piece_names_path="piece_names.txt"):
+def save_tensor(piece_arrays, composer_vector, piece_names, tensor_path="./data/midi_pieces.pt", composer_vector_path="./data/composer_vector.pt", piece_names_path="./data/piece_names.txt"):
     """Saves the list of piece tensors, composer vector, and piece names to the specified paths."""
+    data_dir = os.path.dirname(tensor_path)
+    os.makedirs(data_dir, exist_ok=True)
     torch.save(piece_arrays, tensor_path)  # Save list of piece tensors
     torch.save(composer_vector, composer_vector_path)  # Save composer vector
     
