@@ -187,6 +187,7 @@ class SiaViT(pl.LightningModule):
         Args:
         embedding_dim (int): Dimension of the output embeddings.
         data_dir (str): Directory containing the data.
+        data_hparams
         t (int): Number of time steps.
         o (int): Number of octaves.
         batch_size (int): Batch size for training.
@@ -212,6 +213,7 @@ class SiaViT(pl.LightningModule):
         self,
         embedding_dim=500,
         data_dir='./data',
+        data_hparams=(0., 0.),
         t=20 * 60,
         o=6,
         batch_size=32,
@@ -240,6 +242,7 @@ class SiaViT(pl.LightningModule):
         cl_min_increase_per_epoch=0.01
     ):
         super(SiaViT, self).__init__()
+        self.data_hparams = data_hparams
         self.save_hyperparameters()
         
         # Ensure that list hyperparameters are provided
@@ -419,7 +422,7 @@ class SiaViT(pl.LightningModule):
         """
         Returns the training dataloader.
         """
-        train_dataset = MIDIDataset(self.hparams.data_dir, self.hparams.t, split='train')
+        train_dataset = MIDIDataset(self.hparams.data_dir, self.hparams.t, split='train', *self.data_hparams)
         return DataLoader(train_dataset, batch_size=self.hparams.batch_size, shuffle=True, num_workers=NUM_WORKERS_PER_DATALOADER)
 
     def training_step(self, batch, batch_idx):

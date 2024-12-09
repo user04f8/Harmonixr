@@ -19,6 +19,7 @@ def train(
     model = SiaViT(
         embedding_dim=128,
         data_dir='./data/expon_decay',
+        data_hparams=(add_amt, mult_amt),
         t=TICKS_PER_MINUTE,
         o=6,
         batch_size=batch_size,
@@ -44,7 +45,8 @@ def train(
         warmup_proportion=0.1,
         wraparound_layers=[True, False, False],
         cl_min_start=0.1,
-        cl_min_increase_per_epoch=0
+        cl_min_increase_per_epoch=0,
+        
     )
 
     # Set up logger
