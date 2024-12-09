@@ -2,34 +2,35 @@ import { useState } from 'react'
 import reactLogo from './assets/react.svg'
 import viteLogo from '/vite.svg'
 import './App.css'
+import InteractiveGraph from './templates/InteractiveGraph';
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [graph, setGraph] = useState('/plots/tsne_pieces.htm'); // Default graph
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
+    <div className="min-h-screen flex justify-center items-center bg-gray-100">
+      <div className="w-full h-full p-6 bg-white shadow-md rounded-lg">
+        <h1 className="text-2xl font-semibold text-center mb-4">Interactive Graphs</h1>
+
+        <div className="flex justify-center mb-4">
+          <button
+            className="px-4 py-2 mx-2 bg-blue-500 text-white rounded"
+            onClick={() => setGraph('/plots/tsne_pieces.htm')}
+          >
+            Pieces
+          </button>
+          <button
+            className="px-4 py-2 mx-2 bg-blue-500 text-white rounded"
+            onClick={() => setGraph('/plots/tsne_clusters.htm')}
+          >
+            Clusters
+          </button>
+        </div>
+
+        <InteractiveGraph src={graph} />
       </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    </div>
+  );
 }
 
 export default App
