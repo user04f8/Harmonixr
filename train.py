@@ -8,9 +8,9 @@ from fire import Fire
 TICKS_PER_MINUTE = 20 * 60
 
 def train(
-        max_epochs=150,
+        max_epochs=50,
         devices=1,
-        batch_size=150
+        batch_size=128
 ):
 
     torch.set_float32_matmul_precision('high')
@@ -18,7 +18,7 @@ def train(
     # Instantiate the model
     model = SiaViT(
         embedding_dim=128,
-        data_dir='./data/expon_decay',
+        data_dir='./data/example',
         augementation_amt=(0., 0.05),
         augmentation_taper_end_epoch=None,
         t=TICKS_PER_MINUTE,

@@ -1,5 +1,3 @@
-# viz_sample_in_context.py
-
 import os
 import torch
 import numpy as np
@@ -25,6 +23,7 @@ EXAMPLE_NAMES_TXT = os.path.join(EXAMPLES_DIR, 'piece_names.txt')
 
 T = 1200  # Target length for embedding extraction
 STEP = 20 # Step size for subsample extraction
+TOP_N = 100  # Increase the number of top composers considered
 
 ############################################################
 # Utility functions
@@ -53,11 +52,10 @@ def load_main_dataset(data_dir):
 
 class FixedLengthDataset(Dataset):
     """Dataset that center-crops or pads samples to a fixed length T."""
-    def __init__(self, pieces, labels, t, composer_mapping=None):
+    def __init__(self, pieces, labels, t):
         self.x = pieces
         self.y = labels
         self.t = t
-        self.composer_mapping = composer_mapping if composer_mapping else {}
         self.indices = list(range(len(self.x)))
 
     def __len__(self):
@@ -116,7 +114,6 @@ def extract_subsample_embeddings(model, piece, device, t, step=20):
     Returns: subsample_embeddings (N_subsamples, D), avg_embedding (D)
     """
     C, O, T_full = piece.shape
-    # Do not normalize here, do it after cat
     if T_full < t:
         # If shorter than t, just pad once
         subsamples = [center_pad(piece, t).unsqueeze(0)]
@@ -137,6 +134,9 @@ def run_tsne(embeddings, perplexity=30, random_state=42):
     tsne = TSNE(n_components=3, perplexity=perplexity, random_state=random_state)
     return tsne.fit_transform(embeddings)
 
+def composer_name_lookup(cid, composer_mapping):
+    """Lookup a composer name from composer_mapping, otherwise 'Unknown'."""
+    return composer_mapping.get(cid, 'Unknown')
 
 ############################################################
 # Main routine
@@ -150,20 +150,17 @@ if __name__ == '__main__':
     # Load main dataset
     main_x, main_y, main_composer_mapping = load_main_dataset(DATA_DIR)
 
-    # Filter to top 50 composers by piece count
+    # Filter to top N composers by piece count
     composer_counts = Counter(main_y)
-    top_50_composers = [c for c, _ in composer_counts.most_common(50)]
+    top_composers = [c for c, _ in composer_counts.most_common(TOP_N)]
 
-    # Filter main_x, main_y to these top 50 composers
-    filtered_indices = [i for i, c in enumerate(main_y) if c in top_50_composers]
+    # Filter main_x, main_y to these top composers
+    filtered_indices = [i for i, c in enumerate(main_y) if c in top_composers]
     main_x = [main_x[i] for i in filtered_indices]
     main_y = [main_y[i] for i in filtered_indices]
 
-    # Also update composer_mapping to only contain those in top_50 if desired (not strictly needed)
-    # We'll leave it as is, but it's fine if it has extra keys not used.
-
     # Create dataset from filtered main data
-    main_dataset = FixedLengthDataset(main_x, main_y, T, composer_mapping=main_composer_mapping)
+    main_dataset = FixedLengthDataset(main_x, main_y, T)
     main_embeddings, main_labels = extract_embeddings(model, main_dataset, device=device)
 
     # Compute centroids for main composers
@@ -191,21 +188,11 @@ if __name__ == '__main__':
     else:
         example_x = [xx.float()/255.0 for xx in example_x]
 
-    # Create a separate composer mapping for example composers
-    unique_example_composers = sorted(set([int(e.item()) for e in example_y]))
-    example_composer_mapping = {int(c): f"{c}" for c in unique_example_composers}
-
-    # Merge composer mappings
-    merged_composer_mapping = dict(main_composer_mapping)
-    for k, v in example_composer_mapping.items():
-        if k not in merged_composer_mapping:
-            merged_composer_mapping[k] = v
-
     # Extract embeddings for the example pieces (one embedding per piece)
-    example_dataset = FixedLengthDataset(example_x, [int(yy.item()) for yy in example_y], T, composer_mapping=merged_composer_mapping)
+    example_dataset = FixedLengthDataset(example_x, [int(yy.item()) for yy in example_y], T)
     example_embeddings, example_labels = extract_embeddings(model, example_dataset, device=device)
 
-    # Extract subsample embeddings for each example piece using raw data
+    # Extract subsample embeddings for each example piece using raw data (unscaled)
     example_x_raw = torch.load(EXAMPLE_PIECES_PT)
     if isinstance(example_x_raw, torch.Tensor):
         example_x_raw = [example_x_raw[i] for i in range(example_x_raw.shape[0])]
@@ -223,85 +210,64 @@ if __name__ == '__main__':
     subsample_embeddings = np.vstack(subsample_embeddings_list)
     subsample_labels = np.array(subsample_labels_list)
 
-    # Combine all embeddings: centroids + example pieces + subsamples
+    # Combine all embeddings: centroids (main) + example pieces + subsamples
+    # For the first plot:
+    # We will run TSNE on all, but we will ONLY use the centroids for coloring and main display.
+    # The example pieces and subsamples will just be added as separate traces with no composer confusion.
+
     all_embeddings = np.vstack([composer_centroids, example_embeddings, subsample_embeddings])
-    all_labels = np.concatenate([centroid_labels, example_labels, subsample_labels])
+    # We only need all_labels to handle indexing if needed, but not for composer labeling the example pieces.
+    # The main composers are at top, example pieces next, then subsamples.
+    # We'll just treat example pieces and subsamples as unlabeled in terms of composer.
+
+    # Run TSNE on full set
+    all_tsne = run_tsne(all_embeddings)
 
     n_centroids = len(composer_centroids)
     n_example = len(example_embeddings)
     subsample_start = n_centroids + n_example
     subsample_end = subsample_start + subsample_embeddings.shape[0]
 
-    # Run TSNE on full set
-    all_tsne = run_tsne(all_embeddings)
-
-    # We will now reproduce the style of fig2 from the user's snippet.
-    # We'll only use centroids + example pieces for the df used to determine color and size
-    # Subsamples are plotted separately as grey points.
-
-    # Create a DataFrame for centroids + example pieces
-    # Composer names for these points:
-    combined_labels = np.concatenate([centroid_labels, example_labels])
-    combined_tsne = all_tsne[:n_centroids+n_example]
-
-    # Map labels to composer names
-    combined_composer_names = [merged_composer_mapping.get(int(lbl), f'Unknown_{lbl}') for lbl in combined_labels]
-
-    # Create df as in snippet
-    df = pd.DataFrame({
-        'x': combined_tsne[:, 0],
-        'y': combined_tsne[:, 1],
-        'z': combined_tsne[:, 2],
-        'composer': combined_composer_names
+    # Create a DataFrame for centroids only
+    centroid_composers = [composer_name_lookup(cid, main_composer_mapping) for cid in centroid_labels]
+    centroids_df = pd.DataFrame({
+        'x': all_tsne[:n_centroids, 0],
+        'y': all_tsne[:n_centroids, 1],
+        'z': all_tsne[:n_centroids, 2],
+        'composer': centroid_composers
     })
 
-    # Assign sample counts:
-    # For main composers (in top 50), use the actual piece count from composer_counts
-    # For example composers, they have 1 piece each
-    piece_count_dict = {}
-    for c in top_50_composers:
-        # top_50_composers selected from main dataset, so composer_counts has their counts
-        piece_count_dict[merged_composer_mapping[c]] = composer_counts[c]
-
-    for c in unique_example_composers:
-        piece_count_dict[merged_composer_mapping[c]] = 1
-
-    # In snippet logic:
-    # Calculate centroids and colors
-    centroids = df.groupby('composer')[['x', 'y', 'z']].mean()
-    centroids['color_value'] = centroids.sum(axis=1)
-
+    centroids_df['color_value'] = centroids_df[['x', 'y', 'z']].sum(axis=1)
     color_scale = px.colors.sequential.Rainbow
     num_colors = len(color_scale)
-    centroids['color_index'] = pd.qcut(centroids['color_value'], num_colors, labels=False)
-    centroid_colors = {composer: color_scale[idx] for composer, idx in centroids['color_index'].items()}
+    # Group by composer to get single centroid per composer, but we already have only centroids
+    # centroids_df is already centroids, no groupby needed.
+    # Just mimic logic: each row is a centroid. We have 1 centroid per composer.
+    grouped_centroids = centroids_df.groupby('composer')[['x', 'y', 'z', 'color_value']].mean()
+    # qcut on grouped
+    grouped_centroids['color_index'] = pd.qcut(grouped_centroids['color_value'], num_colors, labels=False)
+    centroid_colors = {composer: color_scale[idx] for composer, idx in grouped_centroids['color_index'].items()}
 
-    # Assign colors to df
-    df['color'] = df['composer'].map(centroid_colors)
+    # Get piece counts from composer_counts for main composers only
+    # If a top composer isn't in composer_counts (shouldn't happen), default to 1
+    grouped_centroids['sample_count'] = grouped_centroids.index.map(lambda c: composer_counts[[k for k,v in main_composer_mapping.items() if v == c][0]] if any(v == c for v in main_composer_mapping.values()) else 1)
 
-    # The snippet sets sample_count from the number of points per composer in df,
-    # but we want actual piece counts:
-    # centroids['sample_count'] = centroids.index.map(df['composer'].value_counts())
-    # Override with actual counts from piece_count_dict
-    centroids['sample_count'] = centroids.index.map(lambda c: piece_count_dict.get(c, 1))
-
-    # Now we produce the fig2 style plot:
-    # Plot centroids as in snippet fig2
+    # fig2 style: centroids
     fig2 = go.Figure()
 
     fig2.add_trace(go.Scatter3d(
-        x=centroids['x'],
-        y=centroids['y'],
-        z=centroids['z'],
+        x=grouped_centroids['x'],
+        y=grouped_centroids['y'],
+        z=grouped_centroids['z'],
         mode='markers+text',
         marker=dict(
-            size=centroids['sample_count'] / centroids['sample_count'].max() * 40 + 2,
-            color=[centroid_colors[composer] for composer in centroids.index],
+            size=grouped_centroids['sample_count'] / grouped_centroids['sample_count'].max() * 40 + 2,
+            color=[centroid_colors[composer] for composer in grouped_centroids.index],
             opacity=0.8,
         ),
-        text=centroids.index,
+        text=grouped_centroids.index,
         textposition='top center',
-        hovertext=centroids['sample_count'].apply(lambda x: f"Samples: {x}"),
+        hovertext=grouped_centroids['sample_count'].apply(lambda x: f"Samples: {x}"),
         hoverinfo="text"
     ))
 
@@ -314,8 +280,7 @@ if __name__ == '__main__':
         )
     )
 
-    # Highlight example pieces (they are within df and centroids, but we also want them as diamonds)
-    # Example pieces are from indices [n_centroids, n_centroids+n_example)
+    # Add example pieces as black diamonds
     for i, idx in enumerate(range(n_centroids, n_centroids + n_example)):
         fig2.add_trace(go.Scatter3d(
             x=[all_tsne[idx, 0]],
@@ -328,7 +293,7 @@ if __name__ == '__main__':
             name=piece_name_labels[i]
         ))
 
-    # Add subsamples as separate grey points, not associated with any composer in df
+    # Add subsamples as grey points
     fig2.add_trace(go.Scatter3d(
         x=all_tsne[subsample_start:subsample_end, 0],
         y=all_tsne[subsample_start:subsample_end, 1],
@@ -340,16 +305,24 @@ if __name__ == '__main__':
 
     fig2.show()
 
-    # Plot only subsamples of the two example pieces in a separate t-SNE as originally done
+    with open(EXAMPLE_NAMES_TXT, 'r', encoding='utf-8') as f:
+        example_name_lines = f.readlines()
+
+    # Map indices to names, using only the first name in each line
+
+    composer_mapping = {i: line.strip().split()[0] for i, line in enumerate(example_name_lines)}
     subsample_tsne = run_tsne(subsample_embeddings, perplexity=5)
+    subsample_composer_names = []
+    for lbl in subsample_labels:
+        subsample_composer_names.append(composer_mapping.get(lbl, 'Unknown'))
+
     sdf = pd.DataFrame({
         'x': subsample_tsne[:, 0],
         'y': subsample_tsne[:, 1],
         'z': subsample_tsne[:, 2],
-        'composer': [example_composer_mapping.get(int(lbl), 'Unknown') for lbl in subsample_labels]
+        'composer': subsample_composer_names
     })
 
-    # Just a simple 3D scatter for subsamples
     fig_sub = px.scatter_3d(sdf, x='x', y='y', z='z', color='composer', hover_name='composer',
                             title='3D t-SNE: Subsamples of the Two Example Pieces')
     fig_sub.show()

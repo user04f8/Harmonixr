@@ -7,6 +7,8 @@ from sklearn.model_selection import train_test_split
 from itertools import combinations
 import pytorch_lightning as pl
 
+EXAMPLE_DIR = './data/example'
+
 class MIDIDataset(Dataset):
     def __init__(self, data_dir, t, split='train', test_size=0.2, random_state=42, pair_type='mixed', add_noise_amt=0., mult_noise_amt=0.):
         self.t = t
@@ -34,22 +36,23 @@ class MIDIDataset(Dataset):
         # Ensure labels are integers
         self.y = [int(label.item()) for label in self.y]
 
-        # Perform train/val split
-        x_train, x_val, y_train, y_val = train_test_split(
-            self.x, self.y, test_size=test_size, random_state=random_state
-        )
+        self.is_train = self.split == 'train'
 
-        if self.split == 'train':
-            self.x = x_train
-            self.y = y_train
-            self.is_train = True
-        elif self.split == 'val':
-            self.x = x_val
-            self.y = y_val
-            self.is_train = False
+        if self.data_dir == EXAMPLE_DIR:
+            print('Skipping validate split for example data')
         else:
-            raise ValueError(f"Unknown split: {self.split}")
+            # Perform train/val split
+            x_train, x_val, y_train, y_val = train_test_split(
+                self.x, self.y, test_size=test_size, random_state=random_state
+            )
 
+            if self.is_train:
+                self.x = x_train
+                self.y = y_train
+            else:
+                self.x = x_val
+                self.y = y_val
+                
         # Build index by composer
         self.composer_indices = {}
         for idx, label in enumerate(self.y):
@@ -72,7 +75,11 @@ class MIDIDataset(Dataset):
         random.seed(random_state + hash(self.pair_type))  # Set seed for reproducibility
         pairs = []
         pair_labels = []
-        MAX_PAIRS = 500
+        if self.data_dir == EXAMPLE_DIR:
+            print('Skipping validate set for example data')
+            return pairs, pair_labels
+        else:
+            MAX_PAIRS = 500
 
         if self.pair_type == 'similar':
             max_pairs_per_composer = MAX_PAIRS
