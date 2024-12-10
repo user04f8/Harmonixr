@@ -453,8 +453,8 @@ class SiaViT(pl.LightningModule):
             else:
                 factor = max(0.0, (max_epochs - current_epoch) / max_epochs)
 
-            new_add_noise_amt = self.original_add_noise_amt * factor
-            new_mult_noise_amt = self.original_mult_noise_amt * factor
+            new_add_noise_amt = self.augmentation_amt[0] * factor
+            new_mult_noise_amt = self.augmentation_amt[1] * factor
 
             # Update the augmentation amounts in the dataset
             self.train_dataset.set_augmentation_amt(new_add_noise_amt, new_mult_noise_amt)
