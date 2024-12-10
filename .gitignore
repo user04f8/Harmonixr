@@ -1,4 +1,5 @@
 data/*/*.pt
+!data/example/*
 synthetic_data
 __pycache__
 lightning_logs
