@@ -213,7 +213,8 @@ class SiaViT(pl.LightningModule):
         self,
         embedding_dim=500,
         data_dir='./data',
-        data_hparams=(0., 0.),
+        augementation_amt=(0., 0.),
+        augmentation_taper_end_epoch=None,
         t=20 * 60,
         o=6,
         batch_size=32,
@@ -242,7 +243,8 @@ class SiaViT(pl.LightningModule):
         cl_min_increase_per_epoch=0.01
     ):
         super(SiaViT, self).__init__()
-        self.data_hparams = data_hparams
+        self.augmentation_amt = augementation_amt
+        self.augmentation_taper_end_epoch = augmentation_taper_end_epoch
         self.save_hyperparameters()
         
         # Ensure that list hyperparameters are provided
@@ -422,8 +424,8 @@ class SiaViT(pl.LightningModule):
         """
         Returns the training dataloader.
         """
-        train_dataset = MIDIDataset(self.hparams.data_dir, self.hparams.t, split='train', add_noise_amt=self.data_hparams[0], mult_noise_amt=self.data_hparams[1])
-        return DataLoader(train_dataset, batch_size=self.hparams.batch_size, shuffle=True, num_workers=NUM_WORKERS_PER_DATALOADER)
+        self.train_dataset = MIDIDataset(self.hparams.data_dir, self.hparams.t, split='train', add_noise_amt=self.augmentation_amt[0], mult_noise_amt=self.augmentation_amt[1])
+        return DataLoader(self.train_dataset, batch_size=self.hparams.batch_size, shuffle=True, num_workers=NUM_WORKERS_PER_DATALOADER)
 
     def training_step(self, batch, batch_idx):
         """
@@ -437,6 +439,29 @@ class SiaViT(pl.LightningModule):
         # Log the current margin
         self.log('current_margin', self.criterion.margin, on_step=True, on_epoch=True, prog_bar=True)
         return loss
+    
+    def on_train_epoch_start(self):
+        """
+        Hook to update the augmentation amounts at the start of each training epoch.
+        """
+        if self.augmentation_taper_end_epoch is not None:
+            current_epoch = self.current_epoch
+            max_epochs = self.augmentation_taper_end_epoch
+
+            if current_epoch > max_epochs:
+                factor = 0.0
+            else:
+                factor = max(0.0, (max_epochs - current_epoch) / max_epochs)
+
+            new_add_noise_amt = self.original_add_noise_amt * factor
+            new_mult_noise_amt = self.original_mult_noise_amt * factor
+
+            # Update the augmentation amounts in the dataset
+            self.train_dataset.set_augmentation_amt(new_add_noise_amt, new_mult_noise_amt)
+
+            # Optionally, log the new augmentation amounts
+            self.log('add_noise_amt', new_add_noise_amt, on_epoch=True, prog_bar=True)
+            self.log('mult_noise_amt', new_mult_noise_amt, on_epoch=True, prog_bar=True)
 
     def val_dataloader(self):
         """

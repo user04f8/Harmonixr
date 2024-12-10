@@ -64,6 +64,10 @@ class MIDIDataset(Dataset):
             # Pre-generate pairs for validation
             self.pairs, self.pair_labels = self._generate_validation_pairs(random_state)
 
+    def set_augmentation_amt(self, add_noise_amt, mult_noise_amt):
+        self.add_noise_amt = add_noise_amt
+        self.mult_noise_amt = mult_noise_amt
+
     def _generate_validation_pairs(self, random_state):
         random.seed(random_state + hash(self.pair_type))  # Set seed for reproducibility
         pairs = []
