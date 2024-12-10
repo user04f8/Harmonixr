@@ -10,7 +10,7 @@ TICKS_PER_MINUTE = 20 * 60
 def train(
         max_epochs=150,
         devices=1,
-        batch_size=128
+        batch_size=150
 ):
 
     torch.set_float32_matmul_precision('high')
@@ -19,8 +19,8 @@ def train(
     model = SiaViT(
         embedding_dim=128,
         data_dir='./data/expon_decay',
-        augementation_amt=(0.5, 1.0),
-        augmentation_taper_end_epoch=20,
+        augementation_amt=(0.1, 0.33),
+        augmentation_taper_end_epoch=50,
         t=TICKS_PER_MINUTE,
         o=6,
         batch_size=batch_size,
