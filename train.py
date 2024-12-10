@@ -19,7 +19,7 @@ def train(
     model = SiaViT(
         embedding_dim=128,
         data_dir='./data/expon_decay',
-        augementation_amt=(0.001, 0.33),
+        augementation_amt=(0., 0.1),
         augmentation_taper_end_epoch=150,
         t=TICKS_PER_MINUTE,
         o=6,
