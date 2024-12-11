@@ -40,17 +40,32 @@ We leverage the [contrastive loss function](https://ieeexplore.ieee.org/abstract
 
 As regularization we include dropout in our convolutional layers and transformer encoder.
 
-## Dataset
+## Data
+
+### Dataset
 
 We evaluate our model training on [GiantMIDI-Piano](https://github.com/bytedance/GiantMIDI-Piano), a dataset containing 10,800 piano pieces from over 2,700 different composers. 
 
 <!-- We chose this dataset is due to its quality; the midi files capture notes with extremely high precision in timing and a level of detail in the velocities of notes not present in any previous piano dataset. -->
 
-## Data preprocessing
+### Data preprocessing
 
-We transform each MIDI file into a 3D tensor with dimensions pitch = 12, octave = 6, and time. Pitch and octave represent the 72 most common notes (F1 to E7) in the data set, and time represents the active notes being played for each 50ms time window in the midi file. Each value within a tensor is defined as 0 when a note is not playing, or a time-decayed velocity to simulate the natural decrease in volume when a key in a piano is played.
+We transform each MIDI file into a 3D tensor with dimensions pitch = 12, octave = 6, and time. Pitch and octave represent the 72 most common notes (F1 to E7) in the data set, and time represents the active notes being played for each 50ms time window in the midi file. 
+
+We have two strategies for conversion to numerical formats:
+
+ (1) each value within a tensor is defined as 0 when a note is not playing, or a time-decayed velocity to simulate the natural decrease in volume when a key in a piano is played.
+ (2) each value is simply 1 if it is being played and 0 otherwise
 
 ![A visualization of the tensor representation of MIDI data](assets/tensor_representation_viz.gif)
+
+Strategy 1 is displayed above, and while the model optimizes considerably more quickly on this strategy, the difference in validation accuracy at early stopping is minimal.
+
+<!-- TensorBoard TODO -->
+
+### Data augmentation
+
+To improve model generality, we test two strategies: adding random noise, and multiplying by random noise. We generally find the multiplying strategy is far superior across validation metrics, and adding noise has relatively limited effects on the model.
 
 ## Evaluation
 
@@ -95,6 +110,8 @@ What is particualrly impressive about this capability is the ability to easily s
 ![Nathan and Xavier's distinct clusters](assets/nathan_xavier_validation.png)
 
 This demonstrates the clear incredible power and generality of our model beyond its training data.
+
+(You can play with this capability by running `viz_sample_in_context.py` with an appropriately trained model checkpoint, or by accessing the interactive visualization by opening `plots/tsne_nathan_xavier.html` in a browser.)
 
 ## Reproducability
 
