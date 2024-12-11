@@ -14,8 +14,11 @@ from viz_utils import load_model
 ############################################################
 # Configuration
 ############################################################
-MODEL_CKPT_PATH = input("Provide the path to the *.ckpt file produced by train.py: ").strip() or 'tb_logs/SiaViT/version_66/checkpoints/last.ckpt'
+MODEL_CKPT_PATH = input("Provide the path to the *.ckpt file produced by train.py: ").strip()
 
+# example values: 
+# 'tb_logs/SiaViT/version_66/checkpoints/last.ckpt'
+# 'tb_logs\SiaViT\version_56\checkpoints\epoch=13-val_loss_mixed=0.00118.ckpt'
 # 'tb_logs/SiaViT/version_56/checkpoints/last.ckpt'
 
 DATA_DIR = './data/expon_decay'  # main dataset directory
