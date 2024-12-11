@@ -63,6 +63,8 @@ Strategy 1 is displayed above, and while the model optimizes considerably more q
 
 ![A comparison of the two strategies in a TensorBoard chart](assets/tensorboard_data_strats.png)
 
+The above chart shows the contrastive loss value over training iterations, where lower is better and strategy 1 (orange) clearly is an improvement on strategy 2 (blue).
+
 ### Data augmentation
 
 To improve model generality, we test two strategies: adding random noise, and multiplying by random noise. We generally find the multiplying strategy is far superior across validation metrics, and adding noise has relatively limited effects on the model.
