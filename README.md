@@ -59,9 +59,9 @@ We have two strategies for conversion to numerical formats:
 
 ![A visualization of the tensor representation of MIDI data](assets/tensor_representation_viz.gif)
 
-Strategy 1 is displayed above, and while the model optimizes considerably more quickly on this strategy, the difference in validation accuracy at early stopping is minimal.
+Strategy 1 is displayed above, and while the model optimizes considerably more quickly on this strategy, the difference in validation accuracy at early stopping is minimal. The improvement can be seen in the below chart:
 
-<!-- TensorBoard TODO -->
+![A comparison of the two strategies in a TensorBoard chart](assets/tensorboard_data_strats.png)
 
 ### Data augmentation
 
