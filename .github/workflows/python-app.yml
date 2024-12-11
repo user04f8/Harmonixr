@@ -1,0 +1,40 @@
+name: Harmonixr CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  setup:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: 3.12  
+
+    - name: Install dependencies
+      run: |
+        make install
+    
+    - name: Preprocess data
+      run: |
+        make preprocess
+    
+    - name: Train model (limited to 5 seconds)
+      run: |
+        timeout 15 make train
+      env:
+        PYTHONUNBUFFERED: 1  # Ensures real-time logging
+    
+    - name: Verify workflow completed
+      run: |
+        echo "CI workflow completed successfully!"
