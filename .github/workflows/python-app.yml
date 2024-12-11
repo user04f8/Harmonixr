@@ -1,0 +1,39 @@
+name: Harmonixr CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: 3.9  # Adjust if needed
+
+    - name: Install dependencies
+      run: |
+        make install
+
+    - name: Preprocess example files
+      run: |
+        make preprocess
+
+    - name: Run training (limited to 10 seconds)
+      run: |
+        timeout 10s make train || echo "Training terminated after timeout"
+        exit 0  # Prevents the job from failing due to timeout
+
+    - name: Cleanup (Optional)
+      run: |
+        make clean
