@@ -90,6 +90,12 @@ To test this functionality, some members of the team composed their own songs in
 
 While our pieces did not quite match the greats (we're computer scientists after all, not composers), being able to visualize any MIDI file in context with hundreds of other pieces is a powerful tool for understanding what makes certain songs sound similar.
 
+What is particualrly impressive about this capability is the ability to easily separate pieces from "composers" (Nathan and Xavier) without ever having trained the model on said composers. The following uses a model and t-SNE projection that was only ever trained on the GiantMIDI training data and never saw our pieces:
+
+![Nathan and Xavier's distinct clusters](assets/nathan_xavier_validation.png)
+
+This demonstrates the clear incredible power and generality of our model beyond its training data.
+
 ## Reproducability
 
 The code is primed to run on an example dataset, with two composers.
