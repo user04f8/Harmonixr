@@ -92,10 +92,14 @@ While our pieces did not quite match the greats (we're computer scientists after
 
 ## Reproducability
 
-In order to reproduce our result, follow the below steps:
+The code is primed to run on an example dataset, with two composers.
 
+In order to run on the actual dataset, rather than our example data, follow the steps below first:
  - Read the required disclaimer, and follow the directions to down the dataset [here](https://github.com/bytedance/GiantMIDI-Piano/blob/master/disclaimer.md). 
  - Extract the folder within surname_checked_midis.zip named "surname_checked_midis" into the parent directory, so that the midi files are stored at ./surname_check_midis/*.mid
+ - Set `example_data` to false in preprocessing.py to load actual dataset
+
+To run and train a model:
  - `make install` (creates a virtual environment and installs requirements)
  - `make preprocess` (runs the preprocessing on the midi files)
  - `make train` (begins model training)
