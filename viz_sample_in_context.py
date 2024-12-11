@@ -14,7 +14,7 @@ from viz_utils import load_model
 ############################################################
 # Configuration
 ############################################################
-MODEL_CKPT_PATH = 'tb_logs/SiaViT/version_66/checkpoints/last.ckpt'
+MODEL_CKPT_PATH = input("Provide the path to the *.ckpt file produced by train.py: ").strip() or 'tb_logs/SiaViT/version_66/checkpoints/last.ckpt'
 
 # 'tb_logs/SiaViT/version_56/checkpoints/last.ckpt'
 
