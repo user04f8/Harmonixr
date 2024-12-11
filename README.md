@@ -80,6 +80,16 @@ Interestingly, we observe a consistent trend across diverse hyperparameters and 
 
 ![3D t-SNE partially trained model](assets/tsne_piece_alt_less_trained.png)
 
+### In-Context Visualization
+
+We have also added the ability to visualize how an input set of MIDI files compares with the larger dataset. Leveraging this, it is easy to discover pieces which are fundamentally similar to those provided by the user. This is a useful way to search for similar music thanks to how the model accounts for such intrinsic properties as the pitch, octave, and velocity of notes and compares that information to patterns found in other pieces. 
+
+To test this functionality, some members of the team composed their own songs in the MIDI sequence format, and these files were fed into our model. The `viz_sample_in_context.py` script then generates a new visualization which highlights the sample data among the overall dataset, as shown below:
+
+![Nathan and Xavier's pieces visualized in context](assets/viz_in_context.png)
+
+While our pieces did not quite match the greats (we're computer scientists after all, not composers), being able to visualize any MIDI file in context with hundreds of other pieces is a powerful tool for understanding what makes certain songs sound similar.
+
 ## Reproducability
 
 In order to reproduce our result, follow the below steps:
