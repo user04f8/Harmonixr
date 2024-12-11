@@ -127,4 +127,6 @@ To run and train a model:
  - `make preprocess` (runs the preprocessing on the midi files)
  - `make train` (begins model training)
 
+ `viz.py` was used to create the visualizations, `checkpoint_path` must be set manually.
+
 In order to delete the virtual environment, run `make clean`, or `make reinstall` if reinstallation is needed. 
