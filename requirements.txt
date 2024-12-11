@@ -6,6 +6,7 @@ einops
 tensorboard
 tensorboardX
 plotly
+pandas
 scikit-learn
 tqdm
 fire

@@ -162,7 +162,11 @@ def save_tensor(piece_arrays, composer_vector, piece_names, tensor_path="./data/
     print(f"Piece names saved to {piece_names_path}")
 
 # Usage example
-folder_path = 'midi_example_data'
+example_data = True
+
+folder_path = 'surname_checked_midis'
+if example_data:
+    folder_path = 'midi_example_data'
 time_resolution_ms = 50  # Define the time grid in milliseconds
 
 # Process the folder and save the tensor and composer vector
